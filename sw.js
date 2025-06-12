@@ -2,7 +2,7 @@ const CACHE_NAME = 'my-pwa-cache-v1';
 
 const urlsToCache = [
 
-  'https://gist.githubusercontent.com/Julytoashes/fa15cdc73f45e2b20227b4403c5cc39f/raw/index.html',
+  'https://julytoashes.github.io/notes-pwa/index.html',
 
   'https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css'
 
