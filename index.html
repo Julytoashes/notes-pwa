@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🍊</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css">
-   <link rel="manifest" href="manifest.json">
+   <link rel="manifest" href="/notes-pwa/manifest.json">
  <style>
     	
         body { 
@@ -1855,14 +1855,19 @@ function saveToLocalStorage() {
     </script>
     <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(registration => {
-      console.log('Service Worker registered with scope:', registration.scope);
-    })
-    .catch(error => {
-      console.log('Service Worker registration failed:', error);
+      navigator.serviceWorker.register('/notes-pwa/sw.js')
+        .then(reg => console.log('SW registered', reg))
+        .catch(err => console.error('SW error', err));
+    }
+    
+    // 添加PWA安装提示（可选）
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      const installBtn = document.createElement('button');
+      installBtn.textContent = '安装应用';
+      installBtn.onclick = () => e.prompt();
+      document.body.appendChild(installBtn);
     });
-}
 </script>
 </body>
 </html>
