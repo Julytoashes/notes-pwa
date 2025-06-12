@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>🍊</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css">
+   <link rel="manifest" href="manifest.json">
+ <style>
+    	
+        body { 
+            font-family: "KaiTi", "STKaiti", serif;
+            padding: 20px; 
+            background-color: #1d1d5c; /* 网页背景色 */
+            color: #f7ebeb; /* 正文颜色 */
+            font-size: 11px;
+           
+    background-size: 4px 30px;
+    background-position: -1px -1px;
+        }
+        .post pre, .post div {
+    font-weight: 300;
+}
+.tag-filter {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1d1d5c;
+    z-index: 1000;
+    padding: 10px 20px;
+    padding-right: 20px; /* 新增 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    padding-bottom: 15px;
+    height: auto;
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+    scrollbar-color: #1d1d5c #1d1d5c;
+}
+
+.tag-filter::after { /* 新增伪元素 */
+    content: "";
+    display: inline-block;
+    min-width: 20px;
+    height: 1px;
+}
+
+/* 针对Webkit浏览器（Chrome, Safari等）的滚动条样式 */
+.tag-filter::-webkit-scrollbar {
+    height: 1px;
+    background-color: #1d1d5c; /* 轨道背景色 */
+}
+
+.tag-filter::-webkit-scrollbar-thumb {
+    background-color: transparent; /* 滑块颜色 - 使用标签橙色 */
+    border-radius: 1px;
+    height: 1px;
+}
+
+.tag-filter::-webkit-scrollbar-track {
+    background: #1d1d5c; /* 轨道颜色 */
+}
+
+ .tag {
+    background-color: transparent;
+    color: #ba5757;
+    font-size: 12px;
+    padding: 5px 6px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: inline-block; /* 确保标签横向排列 */
+    white-space: nowrap; /* 防止标签内文字换行 */
+}
+
+.tag.active {
+    background-color: transparent;
+    font-weight: bold;
+    text-decoration: underline;
+    /* 将外阴影改为内阴影 */
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); /* 使用inset关键字创建内阴影 */
+    /* 可选：添加一点文字凹陷效果 */
+    text-shadow: 0 -1px 1px rgba(0,0,0,0.3);
+}
+
+   .posts-container { 
+    column-count: 2;     /* 分三列 */
+    column-gap: 7.5px;  /* 列间距 */
+    margin-top: 40px; /* 留出顶部空间 */
+    margin-bottom: 60px; /* 留出底部空间 */
+}
+/* 平板横屏/大屏设备 */
+@media (min-width: 1024px) {
+    .posts-container {
+        column-count: 3 !important;
+    }
+}
+
+/* 手机设备 */
+@media (max-width: 550px) {
+    .posts-container {
+        column-count: 1 !important;
+    }
+}
+
+/* 平板分屏模式适配（约50%宽度时保持三列）*/
+@media (min-width: 750px) and (max-width: 1023px) {
+    .posts-container {
+        column-count: 3 !important;
+    }
+}
+.post {
+    break-inside: avoid; /* 防止内容跨列断开 */
+    margin-bottom: 0;/* 替代原gap间距 */
+    width: 100%;         /* 占满列宽 */
+    position: relative;
+    z-index: 2;  /* 建立新的层叠上下文并高于遮罩 */
+    /* 保持其他原有样式 */
+}
+        .post { 
+            background: transparent; /* 帖子背景 */
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.7;    /* 增加行距 */
+    letter-spacing: 0.5px; /* 增加字间距 */
+    /* 已有样式保持不变 */
+    padding-top: 0 !important;
+    padding-bottom: 5px !important;
+        }
+        .post-actions {
+    margin-top: 10px;
+    display: none; /* 默认隐藏 */
+}
+.post pre {
+	position: relative; /* 新增定位 */
+    z-index: 3; /* 确保文字在遮罩上层 */
+    white-space: pre-wrap !important; /* 强制保留空白 */
+    word-break: break-word !important;
+    font-family: inherit !important; /* 保持字体一致 */
+    margin: 0 !important;
+    line-height: 1.5;
+}
+
+.post-actions button {
+    background-color: #141440 !important; /* 标签橙色 */
+    color: #f7ebeb !important; /* 正文颜色 */
+    border: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+}
+
+.edit-mode .post-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between; /* 让按钮两端对齐 */
+}
+        .post-media {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .post-media iframe {
+            width: 100%;
+            aspect-ratio: 4/3; /* 仅视频保持比例 */
+        }
+        .post-media img {
+            max-width: 100%;
+            height: auto; /* 图片自适应 */
+        }
+        
+        
+        /* 新增分页定位样式 */
+.posts-container {
+    position: relative;
+}
+.pagination {
+    position: fixed;
+    left: 0;
+    right: 0;       /* 左右贴边 */
+    bottom: 0;      /* 紧贴底部 */
+    background: #1d1d5c;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+    padding: 4px 0;
+    z-index: 998;
+    margin: 0;      /* 清除默认外边距 */
+    width: 100%;    /* 强制全宽 */
+    transform: none !important; /* 移除任何变换 */
+}
+    
+
+        /* 新增输入框样式 */
+        .add-btn {
+            position: fixed;
+            z-index: 1000;
+            bottom: 50px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            background: #1d1d5c; /* 加号键背景色 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: #f7ebeb; /* 加号键颜色 */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important; /* 橙色阴影效果 */
+        }
+        .edit-btn {
+    position: fixed;
+    z-index: 1000;
+    bottom: 100px;  /* 位于添加按钮上方 */
+    right: 30px;
+    width: 45px;
+    height: 45px;
+    background: #1d1d5c; /* 编辑键背景色 */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    color: #f7ebeb;  /* 编辑键颜色 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important; 
+}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ba5757;
+            padding: 20px;
+            border-radius: 10px;
+            border: 0px solid #1d1d5c;
+            width: 400px;
+        }
+   #content {
+    width: 95%;
+    height: 400px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f7ebeb; /* 输入字色 */
+    padding: 10px;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+}
+        .tag-manager {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(186, 87, 87, 0.25);
+        padding: 20px;
+        border-radius: 10px;
+        border: 0px solid #000000;
+        max-width: 80%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .tag-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px;
+        margin: 5px 0;
+        border-bottom: 1px solid #000000;
+    }
+
+    .tag-count {
+        color: #f7ebeb; /* 标签使用次数色 */
+        font-size: 0.9em;
+        margin-right: 10px;
+    }
+
+    .tag-actions {
+        display: flex;
+        gap: 5px;
+    }
+    .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+   
+}
+.page-number {
+    color: #ba5757; /* 页码色 */
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+.page-number.active {
+    text-decoration: underline;
+}
+.post div {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.youtube-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+}
+
+.youtube-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+
+.youtube-play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    color: #f7ebeb;
+    font-size: 24px;
+    z-index: 1;
+}
+
+
+
+/* 针对搜索框的placeholder */
+#searchInput::placeholder { /* 现代浏览器 */
+    color: #ba5757; /* 使用与标签相同的暗红色 */
+    opacity: 0.4; /* 确保颜色不透明 */
+}
+
+#searchInput::-webkit-input-placeholder { /* Chrome/Safari */
+    color: #ba5757;
+}
+#searchInput::-moz-placeholder { /* Firefox 19+ */
+    color: #ba5757;
+}
+#searchInput:-ms-input-placeholder { /* IE 10+ */
+    color: #ba5757;
+}
+
+/* 针对模态框输入区的placeholder */
+#content::placeholder {
+    color: #1d1d5c;
+    opacity: 0.4;
+}
+#content::-webkit-input-placeholder {
+    color: #1d1d5c;
+}
+#content::-moz-placeholder {
+    color: #1d1d5c;
+}
+#content:-ms-input-placeholder {
+    color: #1d1d5c;
+}
+.bilibili-player-video-top,
+.bilibili-player-video-info,
+.bilibili-player-video-info-hover,
+.bilibili-player-video-info-switch-btn,
+.bilibili-player-video-info-container {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* 重设音频播放器整体样式 */
+audio::-webkit-media-controls-panel {
+    background-color: rgba(30,30,92,0.9) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-width: unset !important; /* 移除固定最小宽度 */
+    width: 100% !important;      /* 强制宽度自适应 */
+}
+
+/* 播放按钮和音量按钮样式 */
+audio::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-mute-button {
+    filter: invert(0.1);
+    flex: 0 0 auto !important; /* 防止按钮被压缩 */
+}
+.play-button {
+    margin-right: 8px !important;
+}
+
+/* 时间显示样式 */
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+    color: #1b1b3d;
+    font-size: 11px !important;
+    padding: 0 0px !important;
+    flex: 0 0 auto !important; /* 防止时间显示被压缩 */
+    min-width: 35px !important; /* 确保时间显示有足够空间 */
+    text-align: center !important;
+}
+
+/* 进度条样式 */
+audio::-webkit-media-controls-timeline {
+    height: 1px !important;
+    flex: 1 1 100px !important; /* 允许进度条伸缩但保持最小宽度 */
+}
+audio::-webkit-media-controls-timeline-container,
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+    flex: 1 !important; /* 允许时间显示区域伸缩 */
+}
+.audio-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.custom-controls {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 1px !important; /* 增加左右间距 */
+}
+/* 进度条滑块样式 */
+audio::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    width: 2px !important;
+    height: 2px !important;
+    background: #ba5757 !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    margin-top: -2px !important;
+}
+
+/* Firefox浏览器进度条滑块样式 */
+audio::-moz-range-thumb {
+    width: 2px !important;
+    height: 2px !important;
+    background: #ba5757 !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+}
+/* 音频播放器进度条样式 */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: #1d1d5c;
+    border-radius: 1px;
+    margin: 0 1px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 4.5px;
+    height: 4.5px;
+    background: #626082;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -1.5px;
+}
+
+
+input[type="range"]::-moz-range-thumb {
+    width: 8px;
+    height: 8px;
+    background: #ba5757;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 1px !important;
+  background: rgba(141, 138, 186, 0.2)!important;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 1px !important;
+  background: rgba(186, 87, 87, 0.2) !important;
+}
+blockquote {
+    border-left: 1.5px solid #14143e;
+    margin: 0.3em 0;  /* 简化上下边距的写法 */
+    padding: 4px 8px 4px 8px;  /* 移除右内边距，只保留左内边距 */
+    color: #a8a8e4;
+    background: rgba(24, 11, 36, 0.1);
+    font-size: 9px;
+    font-family: 'Arial, sans-serif';
+    font-weight: 400;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+hr {
+    border: 0;
+    height: 0;
+    border-top: 1px dashed rgba(168,168,228,0.3); /* 备用虚线样式 */
+    margin: 5px 0;
+}
+/* 下划线样式 */
+.underline-divider {
+    border-bottom: 1px solid #a8a8e4;
+    margin: 3px 0 !important;
+    width: 100%;
+}
+
+/* 引用框内补偿 */
+/* 引用框内水平线补偿 */
+blockquote hr.blockquote-divider {
+    border: none;
+    border-top: 1px dashed rgba(168, 168, 228, 0.3);
+    margin: 5px -8px; /* 抵消引用框的内边距 */
+    width: calc(100% + 16px); /* 扩展宽度以对齐视觉边缘 */
+}
+
+    </style>
+</head>
+<body>
+	<div style="position:fixed;z-index: 999; bottom:50px; left:27.5px; display:flex; gap:10px;">
+    <button onclick="exportPosts()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">⇩</button>
+    <input type="file" id="importFile" style="display:none" onchange="importPosts(this)">
+    <button onclick="document.getElementById('importFile').click()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">⇧</button>
+</div>
+  <!-- 原代码 -->
+<div class="add-btn" onclick="toggleModal(false)">+</div>
+<!-- 新增编辑按钮 -->
+<div class="edit-btn" onclick="toggleEditMode()">✎</div>
+<button onclick="showTagManager()" style="position:fixed; z-index: 1000;bottom:150px; right:30px;border:none; width:45px; height:45px; background:#1d1d5c; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px; color:#f7ebeb;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">♞</button>
+
+    <div class="modal">
+    <textarea id="content" placeholder="输入内容、媒体链接和标签（示例）：
+今天发现一个好视频
+https://youtu.be/abc123
+#音乐 #推荐
+搜索：空格=与 /斜杠=或  双星号是粗体
+单星号斜体
+浪号是删除
+三星号是水平线
+大于号是引用内容"></textarea>
+    <div style="display:flex;gap:10px;justify-content:center;">
+        <button id="saveBtn" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">✔</button>
+        
+    </div>
+</div>
+<div class="tag-manager" id="tagManager">
+    <h3 style="color:#e6d2f9;margin-bottom:20px;">标签管理</h3>
+    <div id="tagList"></div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;">
+        <button onclick="cleanUnusedTags()" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">清理未使用标签</button>
+        <button onclick="document.getElementById('tagManager').style.display='none'" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">关闭</button>
+    </div>
+</div>
+
+    <div id="tagFilter" class="tag-filter"></div>
+    <div class="search-box" style="position:fixed;bottom:100px;left:-35px;z-index:1000;display:flex;flex-direction:row-reverse;align-items:center;gap:5px;">
+    <input type="text" id="searchInput" placeholder="☃☂☀" 
+        style="padding:5px;border-radius:3px;border:none;background:transparent;color:#ba5757;width:50%;outline:none;">
+    <button onclick="searchPosts()" 
+        style="background:#1d1d5c;color:#f7ebeb;border:none;width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">
+        ☞
+    </button>
+</div>
+    <div id="postsContainer" class="posts-container"></div>
+
+    <script>
+    	// 原代码第45行修改为 ▼▼▼
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        posts = [];
+        allTags = new Set();
+        const savedPosts = localStorage.getItem('posts');
+        if (savedPosts) {
+            posts = JSON.parse(savedPosts).map(p => ({ 
+                ...p, 
+                id: p.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                tags: p.tags || [],
+                lastModified: p.lastModified || Date.now() // 为旧数据添加时间戳
+            }))
+// 添加一次性洗牌（Fisher-Yates算法）
+.sort(() => Math.random() - 0.5); 
+            const savedTags = localStorage.getItem('tags');
+            allTags = new Set(savedTags ? JSON.parse(savedTags) : []);
+        }
+        renderTags();
+        renderPosts(posts);
+    } catch (error) {
+        console.error('初始化失败:', error);
+        alert('数据加载异常，已重置');
+        localStorage.clear();
+        location.reload();
+    }
+});
+        // 保持原有JavaScript逻辑不变
+        let posts = [];
+        let allTags = new Set();
+        let isEditMode = false;
+        let currentFilterTag = null; // 新增全局变量
+        let currentSearchTerm = null; // 保存当前搜索词
+        
+        // ▼▼▼ 新增的切换模态框函数 ▼▼▼
+function toggleModal(isEdit = false) {
+    const modal = document.querySelector('.modal');
+    if (modal.style.display === 'block') {
+        modal.style.display = 'none';
+        return;
+    }
+
+    // 重置模态框为初始状态
+    modal.innerHTML = `
+        <textarea id="content" placeholder="输入内容、媒体链接和标签（示例）：
+今天发现一个好视频
+https://youtu.be/abc123
+#音乐 #推荐
+
+搜索：空格=与 /斜杠=或  双星号是粗体
+
+*斜体*
+**加粗**
+~删除线~
+***是水平线
+> 是引用内容"></textarea>
+        <div style="display:flex;justify-content:center;">
+            <button id="saveBtn" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">✔</button>
+        </div>
+    `;
+
+    const saveBtn = modal.querySelector('#saveBtn');
+    
+    if (!isEdit) {
+        saveBtn.onclick = addPost;
+    }
+
+    modal.style.display = 'block';
+}
+// ▲▲▲ 新增的切换模态框函数 ▲▲▲
+
+        function detectMediaType(url) {
+        	const originalUrl = url;
+        
+        // 在 detectMediaType 函数的音频检测逻辑中添加 ▼▼▼
+   const audioRegex = /(?:https?:\/\/.*archive\.org\/.*\.mp3$|\.mp3$)/i;
+   if (audioRegex.test(url)) {
+       return {
+           type: 'audio',
+           url: url,       // 直接使用原始链接（无需处理）
+           original: url   // 明确保存原始链接
+       };
+   }
+    
+    // B站检测
+    const bilibiliRegex = /(?:https?:\/\/)?(?:www\.)?bilibili\.com\/video\/(BV\w+)(\/|\?|&|$)/i;
+    const bilibiliMatch = originalUrl.match(bilibiliRegex);
+    if (bilibiliMatch) {
+        return {
+            type: 'bilibili',
+            url: `https://player.bilibili.com/player.html?bvid=${bilibiliMatch[1]}&page=1`,
+            original: originalUrl // 存储原始链接
+        };
+    }
+
+    // OK.ru检测
+// 修改detectMediaType函数中的正则表达式
+const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i;
+    const okruMatch = originalUrl.match(okruRegex);
+    if (okruMatch) {
+        return {
+            type: 'okru',
+            url: `https://ok.ru/videoembed/${okruMatch[1]}`,
+            original: originalUrl // 存储原始链接
+        };
+    }
+            // 原有媒体检测逻辑
+            const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const youtubeMatch = url.match(youtubeRegex);
+            if (youtubeMatch) {
+    return { 
+        type: 'youtube', 
+        url: `https://www.youtube-nocookie.com/embed/${youtubeMatch[1]}` 
+    };
+}
+
+            const imgurRegex = /https?:\/\/(?:i\.)?imgur\.com\/(\w+)(\.\w+)?/;
+            const imgurMatch = url.match(imgurRegex);
+            if (imgurMatch) {
+                return { 
+                    type: 'image', 
+                    url: `https://i.imgur.com/${imgurMatch[1]}${imgurMatch[2] || '.jpg'}` 
+                };
+            }
+
+            if (/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url)) {
+                return { type: 'image', url: url };
+            }
+
+            return null;
+        }
+
+        function parseInput(input) {
+    const lines = input.split('\n');
+    const media = [];
+    const tags = [];
+    const contentLines = [];
+
+    lines.forEach(originalLine => {
+        // 改为更精确的段落保留逻辑
+        const preservedLine = originalLine
+            .replace(/(#\w+)/g, 'SPLIT_MARKER$1SPLIT_MARKER') // 标记标签
+            .replace(/(https?:\/\/\S+)/gi, 'SPLIT_MARKER$1SPLIT_MARKER') // 标记链接
+            .split('SPLIT_MARKER');
+
+        let lineContent = '';
+        preservedLine.forEach(segment => {
+            if (!segment) return;
+            
+            // 检测媒体链接
+            const mediaType = detectMediaType(segment);
+            if (mediaType) {
+                media.push(mediaType);
+                return;
+            }
+
+            // 检测标签
+            if (segment.startsWith('#')) {
+                tags.push(segment.slice(1));
+                return;
+            }
+
+            // 保留原始内容（包含空格）
+            lineContent += segment;
+        });
+        
+        contentLines.push(lineContent); // 保留原始换行和空格
+    });
+
+    return {
+        content: contentLines.join('\n').replace(/\n+$/,''),
+        media,
+        tags
+    };
+}
+
+        function addPost() {
+    const modal = document.querySelector('.modal');
+    const textarea = modal.querySelector('#content');
+    const input = textarea.value;
+    
+    const { content, media, tags } = parseInput(input);
+    
+    tags.forEach(tag => allTags.add(tag));
+    posts.unshift({ 
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        content, 
+        media, 
+        tags,
+        lastModified: Date.now() // 添加创建时间戳 
+    });
+
+    if (saveToLocalStorage()) {
+        renderTags();
+        renderPosts(posts);
+        modal.style.display = 'none';
+        textarea.value = '';
+    } else {
+        alert('保存失败，请重试');
+    }
+}
+
+        function renderTags() {
+    const tagContainer = document.getElementById('tagFilter');
+    tagContainer.innerHTML = '<div class="tag" onclick="renderPosts(posts); currentFilterTag = null">全部</div>';
+    
+    allTags.forEach(tag => {
+        const tagElement = document.createElement('div');
+        tagElement.className = 'tag' + (currentFilterTag === tag ? ' active' : '');
+        tagElement.textContent = tag;
+        tagElement.onclick = () => {
+            currentFilterTag = tag; // 更新当前选中标签
+            renderPosts(posts.filter(p => p.tags.includes(tag)));
+        };
+        tagContainer.appendChild(tagElement);
+    });
+}
+
+        function renderPosts(postsToRender) {
+        	// 新增筛选状态保持 ▼▼▼
+        if (!postsToRender) {
+        postsToRender = currentFilterTag 
+            ? posts.filter(p => p.tags.includes(currentFilterTag))
+            : posts;
+    }
+if (!postsToRender) {
+        postsToRender = currentSearchTerm 
+            ? posts.filter(p => 
+                p.content.toLowerCase().includes(currentSearchTerm) || 
+                p.tags.some(t => t.toLowerCase().includes(currentSearchTerm))
+              )
+            : currentFilterTag 
+            ? posts.filter(p => p.tags.includes(currentFilterTag))
+            : posts;
+    }
+        	// 在renderPosts函数顶部添加(约第189行)
+if (!postsToRender) postsToRender = posts; // 确保有默认值
+    const container = document.getElementById('postsContainer');
+    container.innerHTML = '';
+    
+    const postsPerPage = 50;
+    const totalPages = Math.ceil(postsToRender.length / postsPerPage);
+    
+    // 使用全局变量存储当前页码
+    if (!window.currentPage) window.currentPage = 1;
+    
+    // 计算当前页的帖子
+    const startIndex = (window.currentPage - 1) * postsPerPage;
+    const endIndex = startIndex + postsPerPage;
+    const currentPosts = postsToRender.slice(startIndex, endIndex);
+    
+    // 渲染帖子
+    currentPosts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.className = 'post';
+        
+        const actions = document.createElement('div');
+        actions.className = 'post-actions';
+        actions.innerHTML = `
+    <button onclick="if(confirm('确定要删除此帖子吗？')) deletePost('${post.id}')">×</button>
+    <button onclick="editPost('${post.id}')">✎</button>
+`;
+        postElement.appendChild(actions);
+        if (post.content) {
+    const contentDiv = document.createElement('pre');
+    contentDiv.style.whiteSpace = 'pre-wrap';
+    contentDiv.style.wordWrap = 'break-word';
+    contentDiv.style.margin = '0';
+    contentDiv.style.fontFamily = 'inherit';
+    contentDiv.innerHTML = post.content
+    // 新增粗体支持（**或__包裹）
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+    // 原有斜体支持
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/_([^_]+)_/g, '<em>$1</em>')
+    // 原有删除线
+    .replace(/~([^~]+)~/g, '<del>$1</del>')
+    // 处理引用框内的水平线（>***）
+// 修改后的引用处理逻辑
+.replace(/(^>.*(\n>.*)*)/gm, (match) => {
+    // 处理引用块内的水平线并保留换行
+    const processedContent = match
+        .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">') // 转换水平线
+        .replace(/^>\s*/gm, '') // 移除每行开头的>和空格
+        .replace(/\n/g, '<br>'); // 保留换行符
+
+    return `<blockquote>${processedContent}</blockquote>`;
+})
+    // 新增引用（>开头行）
+.replace(/(^>.*(\n>.*)*)/gm, (match) => {
+        // 移除每行开头的>和空格，合并内容
+        const content = match.replace(/^>\s*/gm, '');
+        return `<blockquote>${content}</blockquote>`;
+    });
+    postElement.appendChild(contentDiv);
+}
+        
+        if (post.media.length) {
+            const mediaContainer = document.createElement('div');
+            mediaContainer.className = 'post-media';
+            
+            post.media.forEach(media => {
+   if (media.type === 'okru') {
+    mediaContainer.style.margin = '0';
+    mediaContainer.style.display = 'block'; // 添加这行
+    mediaContainer.style.lineHeight = '0'; // 添加这行，消除行高造成的空隙
+
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.width = '100%';
+    container.style.aspectRatio = '4/3';
+    container.style.cursor = 'pointer';
+    container.style.backgroundColor = '#1d1d5c';
+    container.style.overflow = 'hidden'; // 隐藏溢出部分
+    
+    // 从帖子内容中提取多个海报URL
+    const postContent = post.content;
+    const posterMatches = [...postContent.matchAll(/<!--\s*poster="([^"]+)"\s*-->/g)];
+    
+    if (posterMatches.length > 0) {
+        const posterUrls = posterMatches.map(match => match[1]);
+        
+        // 创建滑动容器
+        const slideContainer = document.createElement('div');
+        slideContainer.style.position = 'absolute';
+        slideContainer.style.top = '0';
+        slideContainer.style.left = '0';
+        slideContainer.style.width = `${posterUrls.length * 100}%`; // 总宽度为所有图片宽度之和
+        slideContainer.style.height = '100%';
+        slideContainer.style.display = 'flex';
+        slideContainer.style.transition = 'transform 0.2s ease'; // 快速滑动效果
+        
+        // 创建所有图片
+        posterUrls.forEach(url => {
+            const imageWrapper = document.createElement('div');
+            imageWrapper.style.width = `${100 / posterUrls.length}%`; // 每张图片占总宽度的相等份额
+            imageWrapper.style.height = '100%';
+            
+            const thumbnail = document.createElement('img');
+            thumbnail.style.width = '100%';
+            thumbnail.style.height = '100%';
+            thumbnail.style.objectFit = 'cover';
+            thumbnail.src = url;
+            
+            imageWrapper.appendChild(thumbnail);
+            slideContainer.appendChild(imageWrapper);
+        });
+        
+        container.appendChild(slideContainer);
+        
+        // 创建半透明遮罩
+        const overlay = document.createElement('div');
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.background = 'rgba(0, 0, 0, 0.2)';
+        overlay.style.zIndex = '1';
+        container.appendChild(overlay);
+        
+        // 创建播放按钮
+        const playButton = document.createElement('div');
+        playButton.style.position = 'absolute';
+        playButton.style.top = '50%';
+        playButton.style.left = '50%';
+        playButton.style.transform = 'translate(-50%, -50%)';
+        playButton.style.width = '60px';
+        playButton.style.height = '60px';
+        playButton.style.display = 'flex';
+        playButton.style.alignItems = 'center';
+        playButton.style.justifyContent = 'center';
+        playButton.style.zIndex = '2';
+        
+        // 创建播放图标
+        const playIcon = document.createElement('div');
+        playIcon.style.width = '0';
+        playIcon.style.height = '0';
+        playIcon.style.borderStyle = 'solid';
+        playIcon.style.borderWidth = '10px 0 10px 18px';
+        playIcon.style.borderColor = 'transparent transparent transparent rgba(255, 255, 255, 0.3)';
+        playIcon.style.marginLeft = '5px';
+        
+        playButton.appendChild(playIcon);
+        container.appendChild(playButton);
+
+        // 如果有多个海报，添加自动轮播
+        if (posterUrls.length > 1) {
+            let currentIndex = 0;
+            
+            // 切换函数
+            const switchPoster = () => {
+    let newIndex;
+    do {
+        newIndex = Math.floor(Math.random() * posterUrls.length);
+    } while (newIndex === currentIndex && posterUrls.length > 1);
+    
+    currentIndex = newIndex;
+    slideContainer.style.transform = `translateX(-${(100 / posterUrls.length) * currentIndex}%)`;
+};
+
+            // 自动轮播，10秒切换一次
+            setInterval(switchPoster, 10000);
+        }
+        
+        // 点击播放视频
+        container.onclick = () => {
+            const iframe = document.createElement('iframe');
+            const videoId = media.url.split('/videoembed/')[1];
+            
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.style.position = 'relative';
+            wrapperDiv.style.width = '100%';
+            wrapperDiv.style.aspectRatio = '4/3';
+            wrapperDiv.style.overflow = 'hidden';
+            
+            iframe.src = `https://ok.ru/videoembed/${videoId}?autoplay=1`;
+            iframe.style.position = 'absolute';
+            iframe.style.top = '50%';
+            iframe.style.left = '50%';
+            iframe.style.width = '133.33%';
+            iframe.style.height = '100%';
+            iframe.style.transform = 'translate(-50%, -50%)';
+            iframe.style.border = 'none';
+            iframe.setAttribute('allowfullscreen', '');
+            iframe.setAttribute('allow', 'autoplay');
+            
+            wrapperDiv.appendChild(iframe);
+            container.innerHTML = '';
+            container.appendChild(wrapperDiv);
+        };
+        
+    } else {
+        // 如果没有海报，使用默认iframe
+        const iframe = document.createElement('iframe');
+        const videoId = media.url.split('/videoembed/')[1];
+        
+        iframe.src = `https://ok.ru/videoembed/${videoId}`;
+        iframe.style.position = 'absolute';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.setAttribute('allowfullscreen', '');
+        
+        container.appendChild(iframe);
+    }
+    
+    mediaContainer.appendChild(container);
+}
+                if (media.type === 'image') {
+    // 查找或创建专门的图片轮播容器
+    let imageSlideContainer = mediaContainer.querySelector('.image-slide-container');
+    if (!imageSlideContainer) {
+        imageSlideContainer = document.createElement('div');
+        imageSlideContainer.className = 'image-slide-container';
+        imageSlideContainer.style.position = 'relative';
+        imageSlideContainer.style.width = '100%';
+        imageSlideContainer.style.overflow = 'hidden';
+        
+        // 创建图片包装器
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.transition = 'transform 0.5s ease';
+        wrapper.style.width = '100%';
+        
+        imageSlideContainer.appendChild(wrapper);
+        mediaContainer.appendChild(imageSlideContainer);
+    }
+    
+    const wrapper = imageSlideContainer.querySelector('div');
+    
+    // 创建图片容器
+    const imgContainer = document.createElement('div');
+    imgContainer.style.flex = '0 0 100%';
+    imgContainer.style.width = '100%';
+    
+    // 添加图片
+    const img = document.createElement('img');
+    img.src = media.url;
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.display = 'block';
+    
+    imgContainer.appendChild(img);
+    wrapper.appendChild(imgContainer);
+}
+
+// 在处理完所有媒体后设置轮播
+const imageCount = post.media.filter(m => m.type === 'image').length;
+if (imageCount > 1) {
+    const imageSlideContainer = mediaContainer.querySelector('.image-slide-container');
+    if (imageSlideContainer) {
+        const wrapper = imageSlideContainer.querySelector('div');
+        
+        // 添加随机初始页
+        const initialSlide = Math.floor(Math.random() * imageCount);
+        let currentSlide = initialSlide;
+        
+        // 设置初始位置
+        wrapper.style.transform = `translateX(-${initialSlide * 100}%)`;
+        
+        // 自动轮播函数
+        function autoSlide() {
+            currentSlide = (currentSlide + 1) % imageCount;
+            wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
+        
+        // 设置20秒轮播间隔
+        setInterval(autoSlide, 50000);
+    }
+}
+                
+       if (media.type === 'audio') {
+    const audioContainer = document.createElement('div');
+    audioContainer.style.position = 'relative';
+    audioContainer.style.width = '100%';
+    audioContainer.style.height = '30px';
+    audioContainer.style.display = 'flex';
+    audioContainer.style.alignItems = 'center';
+    audioContainer.style.gap = '0'; // 减少控件间距
+    audioContainer.style.padding = '0'; // 减少内边距
+    audioContainer.style.margin = '0'; // 移除外边距
+
+    const audio = document.createElement('audio');
+    audio.preload = 'metadata';
+    audio.src = media.url;
+
+    // 自定义控件容器
+    const customControls = document.createElement('div');
+    customControls.style.width = '100%';
+    customControls.style.height = '30px';
+    customControls.style.display = 'flex';
+    customControls.style.alignItems = 'center';
+    customControls.style.backgroundColor = 'rgba(84,84,133,0)';
+    customControls.style.borderRadius = '5px';
+    customControls.style.gap = '0'; // 减少控件间距
+    customControls.style.padding = '0'; // 移除内边距
+    customControls.style.margin = '0'; // 移除外边距
+
+    // 播放/暂停按钮
+    const playButton = document.createElement('button');
+    playButton.innerHTML = '▶';
+    playButton.style.backgroundColor = 'transparent';
+    playButton.style.border = 'none';
+    playButton.style.color = '#8d8aba';
+    playButton.style.cursor = 'pointer';
+    playButton.style.padding = '0';
+    playButton.style.margin = '0';
+    playButton.style.width = '20px'; // 固定宽度
+    playButton.style.height = '20px';
+    playButton.style.display = 'flex';
+    playButton.style.alignItems = 'center';
+    playButton.style.justifyContent = 'center';
+
+    // 进度条
+    const progressBar = document.createElement('input');
+    progressBar.type = 'range';
+    progressBar.value = 0;
+    progressBar.min = 0;
+    progressBar.max = 100;
+    progressBar.step = 0.1;
+    progressBar.style.flex = '1';
+    progressBar.style.margin = '0 5px'; // 减少进度条边距
+    progressBar.style.padding = '0'; // 移除内边距
+
+    // 时间显示
+    const timeDisplay = document.createElement('span');
+    timeDisplay.style.fontFamily = 'Arial, sans-serif';
+    timeDisplay.style.color = 'rgba(141, 138, 186, 0.7)';
+    timeDisplay.style.fontSize = '9px';
+    timeDisplay.style.whiteSpace = 'nowrap';
+    timeDisplay.style.minWidth = '60px'; // 减少最小宽度
+    timeDisplay.style.display = 'inline-block';
+    timeDisplay.style.textAlign = 'right';
+    timeDisplay.style.flexShrink = '0';
+    timeDisplay.style.padding = '0 2px'; // 减少内边距
+    timeDisplay.style.marginLeft = '0'; // 移除左边距
+
+    // 初始设置为0:00 / 0:00
+    timeDisplay.textContent = '0:00-0:00';
+
+    // 添加元数据加载事件
+    audio.addEventListener('loadedmetadata', () => {
+        const totalMinutes = Math.floor(audio.duration / 60);
+        const totalSeconds = Math.floor(audio.duration % 60);
+        timeDisplay.textContent = `0:00-${totalMinutes}:${totalSeconds.toString().padStart(2, '0')}`;
+    });
+
+    // 播放/暂停逻辑
+    playButton.onclick = () => {
+        if (audio.paused) {
+            audio.play();
+            playButton.innerHTML = '❚❚';
+        } else {
+            audio.pause();
+            playButton.innerHTML = '▶';
+        }
+    };
+
+    // 更新进度条和时间显示
+    audio.addEventListener('timeupdate', () => {
+        const percentage = (audio.currentTime / audio.duration) * 100;
+        progressBar.value = percentage;
+        
+        const currentMinutes = Math.floor(audio.currentTime / 60);
+        const currentSeconds = Math.floor(audio.currentTime % 60);
+        const totalMinutes = Math.floor(audio.duration / 60);
+        const totalSeconds = Math.floor(audio.duration % 60);
+        
+        timeDisplay.textContent = `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')}-${totalMinutes}:${totalSeconds.toString().padStart(2, '0')}`;
+    });
+
+    // 拖动进度条调整播放位置
+    progressBar.addEventListener('input', () => {
+        const time = (progressBar.value / 100) * audio.duration;
+        audio.currentTime = time;
+    });
+
+    // 组装控件
+    customControls.appendChild(playButton);
+    customControls.appendChild(progressBar);
+    customControls.appendChild(timeDisplay);
+    
+    audioContainer.appendChild(audio);
+    audioContainer.appendChild(customControls);
+    mediaContainer.appendChild(audioContainer);
+}
+
+
+
+                
+             if (media.type === 'bilibili') {
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.width = '100%';
+    container.style.aspectRatio = '4/3';
+    container.style.overflow = 'hidden';
+    
+    const iframe = document.createElement('iframe');
+    iframe.src = `${media.url}&high_quality=1&quality=4&qn=112&autoplay=0&danmaku=0`;
+    iframe.style.position = 'absolute';
+    iframe.style.top = '50%';
+    iframe.style.left = '50%';
+    iframe.style.width = '133.33%';
+    iframe.style.height = '100%';
+    iframe.style.transform = 'translate(-50%, -50%)';
+    iframe.style.border = 'none';
+    iframe.setAttribute('allowfullscreen', 'true');
+    
+    // 添加样式来隐藏右上角提示
+    const style = document.createElement('style');
+    style.textContent = `
+        .bilibili-player-video-top,
+        .bilibili-player-video-info,
+        .bilibili-player-video-info-hover,
+        .bilibili-player-video-info-switch-btn,
+        .bilibili-player-video-info-container {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+    `;
+    container.appendChild(style);
+    container.appendChild(iframe);
+    mediaContainer.appendChild(container);
+}
+
+              
+if (media.type === 'youtube') {
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.width = '100%';
+    container.style.cursor = 'pointer';
+    container.style.backgroundColor = 'transparent';
+    
+    // 创建缩略图
+    const thumbnail = document.createElement('img');
+    const videoId = media.url.split('/').pop();
+    thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    thumbnail.style.width = '100%';
+    thumbnail.style.display = 'block';
+    
+    
+    // 添加播放图标
+    const playIcon = document.createElement('div');
+    playIcon.style.position = 'absolute';
+    playIcon.style.bottom = '15px';
+    playIcon.style.right = '15px';
+    playIcon.style.width = '0';
+    playIcon.style.height = '0';
+    playIcon.style.borderTop = '8px solid transparent';
+    playIcon.style.borderBottom = '8px solid transparent';
+    playIcon.style.borderLeft = '12px solid rgba(255, 255, 255, 0.2)';
+    
+    // 点击时替换为iframe
+    container.onclick = () => {
+    const iframe = document.createElement('iframe');
+    const videoId = media.url.match(/(?:\/|v=)([a-zA-Z0-9_-]{11})/)[1];
+    
+    // 创建一个新的包装容器
+    const wrapperDiv = document.createElement('div');
+    wrapperDiv.style.position = 'relative';
+    wrapperDiv.style.width = '100%';
+    wrapperDiv.style.aspectRatio = '4/3'; // 设置4:3的容器比例
+    wrapperDiv.style.overflow = 'hidden'; // 确保超出部分被裁剪
+    
+    // 设置iframe样式
+    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
+    iframe.style.position = 'absolute';
+    iframe.style.top = '50%';
+    iframe.style.left = '50%';
+    iframe.style.width = '133.33%'; // 4:3容器中显示16:9内容需要的宽度
+    iframe.style.height = '100%';
+    iframe.style.transform = 'translate(-50%, -50%)'; // 居中
+    iframe.style.border = 'none';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay');
+    
+    // 将iframe添加到包装容器中
+    wrapperDiv.appendChild(iframe);
+    
+    // 清空原容器并添加新的包装容器
+    container.innerHTML = '';
+    container.appendChild(wrapperDiv);
+    };
+    
+    container.appendChild(thumbnail);
+    container.appendChild(playIcon);
+    mediaContainer.appendChild(container);
+}
+            });
+            
+            postElement.appendChild(mediaContainer);
+        }
+        
+ 
+        
+        container.appendChild(postElement);
+    });
+
+    // 创建分页
+    const pagination = document.createElement('div');
+    pagination.className = 'pagination';
+    
+    // 生成页码
+    let pageNumbers = [];
+    if (totalPages <= 7) {
+        pageNumbers = Array.from({length: totalPages}, (_, i) => i + 1);
+    } else {
+        if (window.currentPage <= 3) {
+            pageNumbers = [1, 2, 3, 4, '...', totalPages];
+        } else if (window.currentPage >= totalPages - 2) {
+            pageNumbers = [1, '...', totalPages-3, totalPages-2, totalPages-1, totalPages];
+        } else {
+            pageNumbers = [1, '...', window.currentPage-1, window.currentPage, window.currentPage+1, '...', totalPages];
+        }
+    }
+
+    pageNumbers.forEach(num => {
+        const pageElement = document.createElement('span');
+        pageElement.className = 'page-number';
+        if (num === '...') {
+            pageElement.textContent = '...';
+        } else {
+            pageElement.textContent = num;
+            if (num === window.currentPage) {
+                pageElement.classList.add('active');
+            }
+            pageElement.onclick = () => {
+                window.currentPage = num;
+                renderPosts(postsToRender);
+                document.documentElement.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+            };
+        }
+        pagination.appendChild(pageElement);
+    });
+
+    // 改回插入到容器内
+container.appendChild(pagination);
+renderTags(); // 确保切换分页时标签状态同步
+}
+        
+       // 新增编辑模式切换函数
+function toggleEditMode() {
+    isEditMode = !isEditMode;
+    document.body.classList.toggle('edit-mode');
+    // 根据当前状态重新渲染 ▼▼▼
+    if (currentSearchTerm) {
+        searchPosts();
+    } else if (currentFilterTag) {
+        renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
+    } else {
+        renderPosts(posts);
+    }
+}
+
+// 新增删除功能
+function deletePost(postId) {
+    posts = posts.filter(p => p.id !== postId);
+    if (saveToLocalStorage()) {  // 替换原来的localStorage.setItem
+        renderPosts(posts);
+    } else {
+        alert('删除失败，请重试');
+    }
+    window.currentPage = 1; // 重置到第一页
+       renderPosts(posts);
+}
+
+// 新增编辑功能
+function editPost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    toggleModal(true); // 以编辑模式打开模态框
+    
+    const modal = document.querySelector('.modal');
+    const textarea = modal.querySelector('#content');
+    const saveBtn = modal.querySelector('#saveBtn');
+
+    // 填充内容
+    const mediaUrls = post.media.map(m => {
+    // 优先使用存储的原始链接
+    if (m.original) return m.original;
+    
+    // 兼容旧数据（没有original字段时）
+    if (m.type === 'youtube') {
+        const videoId = m.url.split('/').pop().split('?')[0];
+        return `https://youtu.be/${videoId}`;
+    } else if (m.type === 'bilibili') {
+        const bvid = new URL(m.url).searchParams.get('bvid');
+        return `https://www.bilibili.com/video/${bvid}/`;
+    } else if (m.type === 'okru') {
+        const videoId = m.url.split('/videoembed/')[1];
+        return `https://ok.ru/video/${videoId}`;
+    }
+    return m.url;
+});
+    
+    textarea.value = [
+    post.content,
+    ...mediaUrls, // 使用处理后的链接
+    ...post.tags.map(t => `#${t}`)
+].join('\n');
+
+// 修改保存按钮的点击事件处理逻辑 ▼▼▼
+saveBtn.onclick = () => {
+    const { content, media, tags } = parseInput(textarea.value);
+    Object.assign(post, { 
+        content, 
+        media, 
+        tags,
+       id: postId,
+        lastModified: Date.now() // 更新修改时间戳
+    });
+    if (saveToLocalStorage()) {
+        // 根据当前状态重新渲染
+        if (currentSearchTerm) {
+            searchPosts(); // 主动触发搜索刷新
+        } else if (currentFilterTag) {
+            renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
+        } else {
+            renderPosts(posts);
+        }
+        modal.style.display = 'none';
+    } else {
+        alert('保存失败，请重试');
+    }
+};
+}
+  
+
+// 在现有JavaScript代码末尾添加以下函数
+function showTagManager() {
+    const tagManager = document.getElementById('tagManager');
+    const tagList = document.getElementById('tagList');
+    tagList.innerHTML = '';
+    
+    // 获取每个标签的使用次数
+    const tagCounts = {};
+    Array.from(allTags).forEach(tag => {
+        tagCounts[tag] = posts.filter(post => post.tags.includes(tag)).length;
+    });
+    
+    // 显示标签列表
+    Array.from(allTags).sort().forEach(tag => {
+        const tagItem = document.createElement('div');
+        tagItem.className = 'tag-item';
+        tagItem.innerHTML = `
+            <span>${tag}</span>
+            <div style="display:flex;align-items:center;">
+                <span class="tag-count">使用次数: ${tagCounts[tag]}</span>
+                <div class="tag-actions">
+                    <button onclick="renameTag('${tag}')" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:4px 8px;border-radius:3px;">重命名</button>
+                    <button onclick="deleteTag('${tag}')" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:4px 8px;border-radius:3px;">删除</button>
+                </div>
+            </div>
+        `;
+        tagList.appendChild(tagItem);
+    });
+    
+    tagManager.style.display = 'block';
+}
+
+function renameTag(oldTag) {
+    const newTag = prompt(`请输入新的标签名称（当前：${oldTag}）：`);
+    if (newTag && newTag !== oldTag) {
+        posts.forEach(post => {
+            const tagIndex = post.tags.indexOf(oldTag);
+            if (tagIndex !== -1) {
+                post.tags[tagIndex] = newTag;
+            }
+        });
+        
+        allTags.delete(oldTag);
+        allTags.add(newTag);
+        
+        if (saveToLocalStorage()) {
+            renderTags();
+            renderPosts(posts);
+            showTagManager();
+        } else {
+            alert('保存失败，请重试');
+        }
+    }
+}
+
+
+
+function deleteTag(tag) {
+    if (confirm(`确定要删除标签"${tag}"吗？`)) {
+        posts.forEach(post => {
+            post.tags = post.tags.filter(t => t !== tag);
+        });
+        
+        allTags.delete(tag);
+        
+        if (saveToLocalStorage()) {
+            renderTags();
+            renderPosts(posts);
+            showTagManager();
+        } else {
+            alert('保存失败，请重试');
+        }
+    }
+}
+
+
+function cleanUnusedTags() {
+    const usedTags = new Set();
+    posts.forEach(post => {
+        post.tags.forEach(tag => usedTags.add(tag));
+    });
+    
+    const unusedTags = Array.from(allTags).filter(tag => !usedTags.has(tag));
+    if (unusedTags.length === 0) {
+        alert('没有找到未使用的标签！');
+        return;
+    }
+    
+    if (confirm(`发现 ${unusedTags.length} 个未使用的标签，是否清理？\n${unusedTags.join(', ')}`)) {
+        unusedTags.forEach(tag => allTags.delete(tag));
+        
+        // 保存更新
+        localStorage.setItem('tags', JSON.stringify([...allTags]));
+        
+        // 刷新显示
+        renderTags();
+        showTagManager();
+    }
+}
+function searchPosts() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    currentSearchTerm = searchInput;
+    if (!searchInput) {
+        currentSearchTerm = null;
+        renderPosts(posts);
+        return;
+    }
+
+    // 判断分隔符类型：包含斜杠则按OR逻辑，否则按AND逻辑
+    const isOR = searchInput.includes('/');
+    const separator = isOR ? '/' : /\s+/; // 选择分隔符
+    
+    // 分割关键词（兼容连续分隔符）
+    const keywords = searchInput.split(separator)
+        .map(k => k.trim())
+        .filter(k => k !== '');
+
+    const filteredPosts = posts.filter(post => {
+        // 根据逻辑类型选择匹配方式
+        return isOR ? 
+            // OR逻辑：任意关键词匹配
+            keywords.some(keyword => checkKeywordMatch(post, keyword)) : 
+            // AND逻辑：所有关键词必须匹配
+            keywords.every(keyword => checkKeywordMatch(post, keyword));
+    });
+
+    renderPosts(filteredPosts);
+}
+
+// 封装关键词匹配逻辑
+function checkKeywordMatch(post, keyword) {
+    const contentMatch = post.content && post.content.toLowerCase().includes(keyword);
+    const tagMatch = post.tags && post.tags.some(tag => tag.toLowerCase().includes(keyword));
+    return contentMatch || tagMatch;
+}
+
+// 添加回车键搜索功能
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchPosts(); // 触发修改后的搜索逻辑
+    }
+});
+function exportPosts() {
+    const data = {
+        posts: posts.map(post => ({
+            ...post,
+            lastModified: post.lastModified || Date.now() // 确保旧数据也有时间戳
+        })),
+        tags: Array.from(allTags)
+    };
+    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `posts_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// 在importPosts函数中添加冲突检测和提示逻辑
+async function importPosts(input) {
+  const file = input.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+      try {
+          const data = JSON.parse(e.target.result);
+            
+          let updatedCount = 0;
+          const newPosts = [];
+          const conflictList = [];
+            
+          // 第一阶段：收集冲突
+          data.posts.forEach(importedPost => {
+              if (!importedPost.lastModified) {
+                  importedPost.lastModified = Date.now();
+              }
+                
+              const existingIndex = posts.findIndex(p => p.id === importedPost.id);
+              if (existingIndex >= 0) {
+                    const existingPost = posts[existingIndex];
+                    
+                    // 检查是否是真正的冲突（内容不同且都有编辑历史）
+                    const isRealConflict = () => {
+                        // 基本字段比较
+                        const basicFieldsDiff = 
+                            importedPost.content !== existingPost.content ||
+                            JSON.stringify(importedPost.tags) !== JSON.stringify(existingPost.tags) ||
+                            JSON.stringify(importedPost.media) !== JSON.stringify(existingPost.media);
+                        
+                        // 都有编辑历史
+                        const bothEdited = importedPost.lastModified && existingPost.lastModified;
+                        
+                        return basicFieldsDiff && bothEdited;
+                    };
+
+                    if (isRealConflict()) {
+                        conflictList.push({
+                            imported: importedPost,
+                            existing: existingPost,
+                            index: existingIndex,
+                            // 添加冲突类型标识
+                            type: 'content'
+                        });
+                    } else if (!isRealConflict() && importedPost.lastModified > existingPost.lastModified) {
+                        // 没有真正冲突但导入版本较新，自动更新
+                        posts[existingIndex] = importedPost;
+                        updatedCount++;
+                    }
+                } else {
+                    newPosts.push(importedPost);
+                }
+                // ▲▲▲ 添加结束 ▲▲▲
+            });
+
+            // 第二阶段：处理冲突
+            for (const conflict of conflictList) {
+                const userChoice = await showConflictDialog(conflict);
+                if (userChoice === 'import') {
+                    posts[conflict.index] = conflict.imported;
+                    updatedCount++;
+                }
+                // 选择"保留"则不做任何操作
+            }
+            
+            // 第三阶段：合并数据
+            posts = [...posts, ...newPosts];
+            data.tags.forEach(tag => allTags.add(tag));
+            
+            if (saveToLocalStorage()) {
+                renderTags();
+                renderPosts(posts);
+                alert(`导入完成！\n新增帖子：${newPosts.length}\n更新帖子：${updatedCount}\n解决冲突：${conflictList.length}`);
+            }
+        } catch(err) {
+            alert('导入失败：' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
+}
+
+// 新增冲突对比对话框
+function showConflictDialog(conflict) {
+    return new Promise((resolve) => {
+        const dialog = document.createElement('div');
+        dialog.style.position = 'fixed';
+        dialog.style.top = '50%';
+        dialog.style.left = '50%';
+        dialog.style.transform = 'translate(-50%, -50%)';
+        dialog.style.background = '#1d1d5c';
+        dialog.style.padding = '20px';
+        dialog.style.borderRadius = '10px';
+        dialog.style.zIndex = '10000';
+        dialog.style.maxWidth = '90vw';
+        
+        // 对比内容生成
+        const diffHtml = generateDiffHtml(conflict.existing, conflict.imported);
+        
+        dialog.innerHTML = `
+            <h3 style="color:#ba5757;margin:0 0 15px 0">发现内容冲突</h3>
+            ${diffHtml}
+ <div style="display:flex;justify-content:space-between;margin-top:20px;">
+    <button onclick="this.parentElement.parentElement.resolution('keep')" 
+        style="background:#ba5757;color:white;border:none;padding:6px 15px;border-radius:5px;">
+        保留当前版本
+    </button>
+    <button onclick="this.parentElement.parentElement.resolution('import')" 
+        style="background:#ba5757;color:white;border:none;padding:6px 15px;border-radius:5px;margin-left:auto;">
+        使用导入版本
+    </button>
+</div>
+
+        `;
+        
+        // 自定义决议方法
+        dialog.resolution = (choice) => {
+            document.body.removeChild(dialog);
+            resolve(choice);
+        };
+        
+        document.body.appendChild(dialog);
+    });
+}
+
+// 生成对比HTML
+function generateDiffHtml(current, imported) {
+  // 只显示实际有差异的字段
+  const diffFields = [
+      { name: 'content', title: '内容' },
+      { name: 'tags', title: '标签', format: v => JSON.stringify(v, null, 2) },
+      { name: 'media', title: '媒体', format: v => JSON.stringify(v, null, 2) }
+  ].filter(field => {
+      const currentVal = field.format ? field.format(current[field.name]) : current[field.name];
+      const importedVal = field.format ? field.format(imported[field.name]) : imported[field.name];
+      return currentVal !== importedVal;
+  });
+
+  if (diffFields.length === 0) {
+      return `<div style="color:#ba5757;">ID相同但未检测到内容差异</div>`;
+  }
+
+  const diffSections = diffFields.map(field => {
+      const currentVal = field.format ? field.format(current[field.name]) : current[field.name];
+      const importedVal = field.format ? field.format(imported[field.name]) : imported[field.name];
+        
+      return `
+          <div class="diff-section">
+              <div class="diff-title">${field.title}对比</div>
+              <div class="diff-row">
+                  <div class="diff-version" style="border-right:1px solid #ba5757;">
+                      <div class="diff-header">当前版本</div>
+                      <div class="diff-content">${currentVal}</div>
+                  </div>
+                  <div class="diff-version">
+                      <div class="diff-header">导入版本</div>
+                      <div class="diff-content">${importedVal}</div>
+                  </div>
+              </div>
+          </div>
+      `;
+  }).join('');
+
+  return `
+<style>
+    .diff-row { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 15px; 
+        margin: 10px 0; 
+    }
+    .diff-header { 
+        color: #ba5757; 
+        margin-bottom: 5px; 
+        font-size: 14px;
+    }
+    .diff-content {
+        background: rgba(0,0,0,0.3); 
+        padding: 10px;
+        margin: 0; 
+        max-height: 200px; 
+        overflow: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-size: 12px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+    .diff-section {
+        margin-bottom: 15px;
+    }
+    .diff-title {
+        color: #f7ebeb;
+        font-size: 13px;
+        margin-bottom: 5px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #ba5757;
+    }
+</style>
+
+      ${diffSections}
+      <div style="color:#888;margin-top:10px;">
+          当前版本修改时间：${new Date(current.lastModified).toLocaleString()}<br>
+          导入版本修改时间：${new Date(imported.lastModified).toLocaleString()}
+      </div>
+  `;
+}
+
+
+
+function saveToLocalStorage() {
+    try {
+        const uniqueIds = new Set(posts.map(p => p.id));
+        if (uniqueIds.size !== posts.length) {
+            console.error('发现重复ID');
+            return false;
+        }
+        localStorage.setItem('posts', JSON.stringify(posts));
+        localStorage.setItem('tags', JSON.stringify([...allTags]));
+        return true;
+    } catch (error) {
+        console.error('保存失败:', error);
+        return false;
+    }
+}
+    </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(registration => {
+      console.log('Service Worker registered with scope:', registration.scope);
+    })
+    .catch(error => {
+      console.log('Service Worker registration failed:', error);
+    });
+}
+</script>
+</body>
+</html>
