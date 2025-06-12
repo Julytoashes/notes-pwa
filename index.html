@@ -8,30 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css">
    <link rel="manifest" href="/notes-pwa/manifest.json">
  <style>
-    	html, body {
-    background-color: #1d1d5c !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    /* 适配 Android 全屏 */
-    height: 100% !important;
-    width: 100% !important;
-    position: fixed !important;
-  }
-
-  /* 针对三星设备的特殊适配 */
-  @supports (padding-top: constant(safe-area-inset-top)) {
-    body {
-      padding-top: constant(safe-area-inset-top) !important;
-      padding-bottom: constant(safe-area-inset-bottom) !important;
-    }
-  }
-  @supports (padding-top: env(safe-area-inset-top)) {
-    body {
-      padding-top: env(safe-area-inset-top) !important;
-      padding-bottom: env(safe-area-inset-bottom) !important;
-    }
-  }
+    	
         body { 
             font-family: "KaiTi", "STKaiti", serif;
             padding: 20px; 
