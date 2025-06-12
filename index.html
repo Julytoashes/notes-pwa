@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍊</title>
+    <meta name="theme-color" content="#000000">
+	<title>🍊</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css">
    <link rel="manifest" href="/notes-pwa/manifest.json">
  <style>
@@ -1852,21 +1853,13 @@ function saveToLocalStorage() {
         return false;
     }
 }
-    </script>
-    <script>
 if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/notes-pwa/sw.js')
         .then(reg => console.log('SW registered', reg))
-        .catch(err => console.error('SW error', err));
+        .catch(err => console.error('SW failed', err));
     }
-    
-    // 添加PWA安装提示（可选）
     window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      const installBtn = document.createElement('button');
-      installBtn.textContent = '安装应用';
-      installBtn.onclick = () => e.prompt();
-      document.body.appendChild(installBtn);
+      console.log('PWA 可安装');
     });
 </script>
 </body>
