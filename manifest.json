@@ -9,7 +9,7 @@
   "icons": [
     {
       "src": "/notes-pwa/images/placeholder.png", 
-      "sizes": "192x192",
+      "sizes": "878x878",
       "type": "image/png",
       "purpose": "any"
     }
