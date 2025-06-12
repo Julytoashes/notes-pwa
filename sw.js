@@ -1,4 +1,4 @@
-const CACHE_NAME = 'my-notes-pwa-cache-v6';  // 更新版本号强制刷新缓存
+const CACHE_NAME = 'my-notes-pwa-cache-v7';  // 更新版本号强制刷新缓存
 const BASE_PATH = '/notes-pwa';              // 添加子路径变量
 
 const urlsToCache = [
