@@ -670,7 +670,7 @@ https://youtu.be/abc123
         	const originalUrl = url;
         
         // 在 detectMediaType 函数的音频检测逻辑中添加 ▼▼▼
-   const audioRegex = /(?:https?:\/\/.*archive\.org\/.*\.mp3$|\.mp3$)/i;
+   const audioRegex = /(?:https?:\/\/.*archive\.org\/.*\.mp3|\.mp3)(?:\?.*)?$/i;
    if (audioRegex.test(url)) {
        return {
            type: 'audio',
