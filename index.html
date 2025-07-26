@@ -690,6 +690,16 @@ https://youtu.be/abc123
         };
     }
 
+	// 检测 MP4 视频直链
+const mp4Regex = /https?:\/\/.+\.mp4(\?.+)?$/i;
+    if (mp4Regex.test(url)) {
+        return {
+            type: 'video', // 新增类型
+            url: url,
+            original: url
+        };
+    }	
+		
     // OK.ru检测
 // 修改detectMediaType函数中的正则表达式
 const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i;
@@ -1047,6 +1057,23 @@ if (!postsToRender) postsToRender = posts; // 确保有默认值
     
     mediaContainer.appendChild(container);
 }
+		    if (media.type === 'video') { // 检测视频类型
+                    const container = document.createElement('div');
+                    container.style.position = 'relative';
+                    container.style.width = '100%';
+                    container.style.aspectRatio = '16/9'; // 16:9比例
+                    container.style.overflow = 'hidden';
+
+                    const video = document.createElement('video');
+                    video.src = media.url;
+                    video.controls = true; // 添加控制按钮
+                    video.style.width = '100%'; // 设置为100%宽度
+                    video.style.height = '100%'; // 设置为100%高度
+                    video.setAttribute('allowfullscreen', ''); // 允许全屏
+
+                    container.appendChild(video);
+                    mediaContainer.appendChild(container);
+		    }
                 if (media.type === 'image') {
     // 查找或创建专门的图片轮播容器
     let imageSlideContainer = mediaContainer.querySelector('.image-slide-container');
