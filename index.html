@@ -104,21 +104,21 @@
 /* 平板横屏/大屏设备 */
 @media (min-width: 1024px) {
     .posts-container {
-        column-count: 4 !important;
+        column-count: 3 !important;
     }
 }
 
 /* 手机设备 */
-@media (max-width: 365px) {
+@media (max-width: 550px) {
     .posts-container {
         column-count: 1 !important;
     }
 }
 
 /* 平板分屏模式适配（约50%宽度时保持三列）*/
-@media (min-width: 365px) and (max-width: 635px) {
+@media (min-width: 750px) and (max-width: 1023px) {
     .posts-container {
-        column-count: 2 !important;
+        column-count: 3 !important;
     }
 }
 .post {
