@@ -824,43 +824,59 @@ const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i
 }
 
         function renderPosts(postsToRender) {
-        	// 新增筛选状态保持 ▼▼▼
-        if (!postsToRender) {
-        postsToRender = currentFilterTag 
-            ? posts.filter(p => p.tags.includes(currentFilterTag))
-            : posts;
-    }
 if (!postsToRender) {
-        postsToRender = currentSearchTerm 
-            ? posts.filter(p => 
-                p.content.toLowerCase().includes(currentSearchTerm) || 
-                p.tags.some(t => t.toLowerCase().includes(currentSearchTerm))
-              )
-            : currentFilterTag 
-            ? posts.filter(p => p.tags.includes(currentFilterTag))
-            : posts;
+    if (currentSearchTerm) {
+        postsToRender = posts.filter(p => 
+            p.content.toLowerCase().includes(currentSearchTerm) || 
+            p.tags.some(t => t.toLowerCase().includes(currentSearchTerm))
+        );
+    } else if (currentFilterTag) {
+        postsToRender = posts.filter(p => p.tags.includes(currentFilterTag));
+    } else {
+        postsToRender = posts;
     }
+}
         	// 在renderPosts函数顶部添加(约第189行)
 if (!postsToRender) postsToRender = posts; // 确保有默认值
+// 保存播放状态
+const mediaStates = {};
+document.querySelectorAll('.post-media audio, .post-media video').forEach(media => {
+    const postId = media.closest('.post').dataset.id;
+    mediaStates[postId] = {
+        time: media.currentTime,
+        playing: !media.paused
+    };
+});
+
     const container = document.getElementById('postsContainer');
-    container.innerHTML = '';
-    
     const postsPerPage = 50;
-    const totalPages = Math.ceil(postsToRender.length / postsPerPage);
-    
-    // 使用全局变量存储当前页码
-    if (!window.currentPage) window.currentPage = 1;
-    
-    // 计算当前页的帖子
-    const startIndex = (window.currentPage - 1) * postsPerPage;
-    const endIndex = startIndex + postsPerPage;
-    const currentPosts = postsToRender.slice(startIndex, endIndex);
-    
+const totalPages = Math.ceil(postsToRender.length / postsPerPage);
+if (!window.currentPage) window.currentPage = 1;
+const startIndex = (window.currentPage - 1) * postsPerPage;
+const endIndex = startIndex + postsPerPage;
+const currentPosts = postsToRender.slice(startIndex, endIndex);
+
+// 获取现有帖子
+        const existingPosts = document.querySelectorAll('.post');
+        const existingPostIds = new Set(Array.from(existingPosts).map(post => post.dataset.id));
+
+        // 移除不再需要的帖子（保留播放中或包含 iframe 的帖子）
+        existingPosts.forEach(postElement => {
+            const postId = postElement.dataset.id;
+            const isInCurrentPage = currentPosts.some(p => p.id === postId);
+            const isPlaying = mediaStates[postId]?.playing;
+            const hasIframe = mediaStates[postId]?.iframe;
+            if (!isInCurrentPage && !isPlaying && !hasIframe) {
+                postElement.remove();
+            }
+        });
     // 渲染帖子
     currentPosts.forEach(post => {
+    	// 跳过已存在的帖子
+if (document.querySelector(`.post[data-id="${post.id}"]`)) return;
         const postElement = document.createElement('div');
         postElement.className = 'post';
-        
+        postElement.dataset.id = post.id;  // 给每个帖子贴个条形码
         const actions = document.createElement('div');
         actions.className = 'post-actions';
         actions.innerHTML = `
@@ -1065,6 +1081,7 @@ if (!postsToRender) postsToRender = posts; // 确保有默认值
                     container.style.overflow = 'hidden';
 
                     const video = document.createElement('video');
+                    video.dataset.mediaId = post.id;
                     video.src = media.url;
                     video.controls = true; // 添加控制按钮
                     video.style.width = '100%'; // 设置为100%宽度
@@ -1151,6 +1168,7 @@ if (imageCount > 1) {
     const audio = document.createElement('audio');
     audio.preload = 'metadata';
     audio.src = media.url;
+    audio.dataset.mediaId = post.id
 
     // 自定义控件容器
     const customControls = document.createElement('div');
@@ -1265,6 +1283,7 @@ if (imageCount > 1) {
     
     const iframe = document.createElement('iframe');
     iframe.src = `${media.url}&high_quality=1&quality=4&qn=112&autoplay=0&danmaku=0`;
+    iframe.dataset.mediaId = post.id;
     iframe.style.position = 'absolute';
     iframe.style.top = '50%';
     iframe.style.left = '50%';
@@ -1365,6 +1384,15 @@ if (media.type === 'youtube') {
         
         container.appendChild(postElement);
     });
+    // 恢复播放状态
+document.querySelectorAll('.post-media audio, .post-media video').forEach(media => {
+    const postId = media.closest('.post').dataset.id;
+    const state = mediaStates[postId];
+    if (state) {
+        media.currentTime = state.time;
+        if (state.playing) media.play();
+    }
+});
 
     // 创建分页
     const pagination = document.createElement('div');
