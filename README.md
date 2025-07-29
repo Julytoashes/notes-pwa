@@ -10,6 +10,7 @@
 https://youtu.be/1j57iDpR1C0
 
 ok.ru电影即替代封面(删除😁，支持封面轮播，多个图片之间不要换行:
+
 <😁!-- poster="https://image.tmdb.org/t/p/w780/j0PhlZkyedbgjgobLSNz5PBRBOl.jpg" -->
 https://ok.ru/video/11956760087090  
 
@@ -25,6 +26,10 @@ https://audio.jukehost.co.uk/3NRdlGYCu0BZHXbE7BNjEnZnH1mrPU6F.mp3
 mp4链接类似(暂时没弄样式和替代封面，主要是不怎么用：
 
 const mp4Regex = /https?:\/\/.+\.mp4(\?.+)?$/i;
+
+音乐播放器：
+
+<iframe src="https://music-xi-black.vercel.app/?playlist=13494662713&theme=dark&themeColor=%231d1d5c" width="100%" height="110" style="border: none; border-radius: 0px;" frameborder="0"></iframe>
 
 ## 文字、手写笔记长图
 多个图片的帖子会轮播而非拼接
