@@ -4,16 +4,27 @@
 多个标签之间记得换行
 ![Demo GIF](https://i.imgur.com/Lyxsj7k.gif)
 
-## 嵌入
-油管视频下方点分享:https://youtu.be/😁
+## 嵌入示例
+油管视频下方点分享:
 
-ok.ru电影:https://ok.ru/video/😁
+https://youtu.be/1j57iDpR1C0
 
-ok.ru替代海报:<😁!-- poster="图片链接" -->  多个图片之间不要换行
+ok.ru电影即替代封面(删除😁，支持封面轮播，多个图片之间不要换行:
+<😁!-- poster="https://image.tmdb.org/t/p/w780/j0PhlZkyedbgjgobLSNz5PBRBOl.jpg" -->
+https://ok.ru/video/11956760087090  
 
 bilibili:https://www.bilibili.com/video/😁
 
-图片、mp3、mp4直链:直接输入
+图片:直接输入链接
+
+mp3链接：
+https://ipaudio4.com/wp-content/uploads/PLAY/Light%20in%20August/15.mp3?_=15
+
+https://audio.jukehost.co.uk/3NRdlGYCu0BZHXbE7BNjEnZnH1mrPU6F.mp3
+
+mp4链接类似(暂时没弄样式和替代封面，主要是不怎么用：
+
+const mp4Regex = /https?:\/\/.+\.mp4(\?.+)?$/i;
 
 ## 文字、手写笔记长图
 多个图片的帖子会轮播而非拼接
@@ -41,7 +52,7 @@ bilibili:https://www.bilibili.com/video/😁
 
 导入json自动合并当前页面没有的，有过编辑记录的对比选择使用哪个版本
 
-缺陷：当前页面已删除的可能还会被导入，有编辑记录的每次导入都会对比版本。。(解决只在一个设备编辑，其他设备只读或换浏览器编辑，或用flomo当草稿同步)
+缺陷：当前页面已删除的可能还会被导入，有编辑记录的每次导入都会对比版本。。(解决：只在一个设备编辑，其他设备只读或换浏览器编辑，或用flomo当草稿同步)
 
 
 
