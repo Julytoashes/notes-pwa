@@ -1,5 +1,5 @@
 ### 7.28 
-切换标签页，含video,audio,iframe的帖子保持播放状态，在所点标签第一页(50条内)的会自动置顶(纵向)
+切换标签页，含video,audio,iframe的共同帖子保持播放状态，在所点标签第一页(50条内)的会自动置顶(纵向)
 
 多个标签之间记得换行
 ![Demo GIF](https://i.imgur.com/Lyxsj7k.gif)
