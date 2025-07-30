@@ -544,6 +544,104 @@ blockquote hr.blockquote-divider {
     margin: 5px -8px; /* 抵消引用框的内边距 */
     width: calc(100% + 16px); /* 扩展宽度以对齐视觉边缘 */
 }
+.pinned-container {
+    break-inside: avoid; /* 防止被多列分割 */
+    break-before: column; /* 强制在第一列开头 */
+    display: block; /* 独占一行 */
+    margin-bottom: 10px; /* 与下方帖子间距 */
+    margin-left: 9px; /* 右移2像素，修正左偏 */
+    padding: 0px; /* 与.post一致 */
+    padding-top: 0; /* 匹配.post的padding-top */
+    padding-bottom: 5px; /* 匹配.post的padding-bottom */
+    background: 
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 30px,
+            rgba(186, 87, 87, 0.2) 30px,
+            rgba(186, 87, 87, 0.2) 31px,
+            transparent 31px,
+            transparent 30px
+        ),
+        repeating-linear-gradient(
+            to right,
+            transparent 0px,
+            transparent 30px,
+            rgba(186, 87, 87, 0.2) 30px,
+            rgba(186, 87, 87, 0.2) 31px,
+            transparent 31px,
+            transparent 30px
+        );
+    backdrop-filter: blur(4px); /* 磨砂玻璃模糊效果 */
+    -webkit-backdrop-filter: blur(4px); /* 兼容 Webkit 浏览器 */
+    position: relative;
+    z-index: 3; /* 高于其他元素 */
+    box-sizing: border-box;
+    display: none; /* 默认隐藏 */
+    width: 100%; /* 默认占满列宽 */
+    /* 移除 max-height 和 overflow-y，让高度自适应 */
+}
+
+.pinned-container.active {
+    display: block; /* 有置顶帖子时显示 */
+}
+
+.pinned-container.fixed {
+    position: fixed; /* 固定定位 */
+    top: 50px; /* 留出顶部标签栏空间 */
+    left: 20px; /* 与页面左边距一致 */
+    width: var(--single-column-width, 100%); /* 动态宽度，匹配单列 */
+    background: 
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 30px,
+            rgba(186, 87, 87, 0.2) 30px,
+            rgba(186, 87, 87, 0.2) 31px,
+            transparent 31px,
+            transparent 30px
+        ),
+        repeating-linear-gradient(
+            to right,
+            transparent 0px,
+            transparent 30px,
+            rgba(186, 87, 87, 0.2) 30px,
+            rgba(186, 87, 87, 0.2) 31px,
+            transparent 31px,
+            transparent 30px
+        ),
+        rgba(29, 29, 92, 0.2); /* 半透明底色 */
+    backdrop-filter: blur(4px); /* 磨砂玻璃模糊效果 */
+    -webkit-backdrop-filter: blur(4px); /* 兼容 Webkit 浏览器 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* 添加阴影以突出悬浮效果 */
+    z-index: 900; /* 确保高于其他元素 */
+    margin-left: 18px; /* 移除左边距以对齐 */
+}
+
+/* Webkit 浏览器滚动条样式 */
+.pinned-container::-webkit-scrollbar {
+    width: 1px;
+}
+.pinned-container::-webkit-scrollbar-thumb {
+    background-color: rgba(29, 29, 92, 0.2);
+    border-radius: 1px;
+}
+.pinned-container::-webkit-scrollbar-track {
+    background: rgba(29, 29, 92, 0.2);
+}
+
+/* 确保置顶帖子样式一致 */
+.pinned-container .post {
+    margin: 0;
+    width: 100%;
+    padding: 0px;
+    padding-top: 0 !important;
+    padding-bottom: 5px !important;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+
 
     </style>
 </head>
@@ -552,11 +650,14 @@ blockquote hr.blockquote-divider {
     <button onclick="exportPosts()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">⇩</button>
     <input type="file" id="importFile" style="display:none" onchange="importPosts(this)">
     <button onclick="document.getElementById('importFile').click()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">⇧</button>
+    <div class="toggle-pin-mode-btn" onclick="togglePinMode()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">☂</div>
 </div>
   <!-- 原代码 -->
 <div class="add-btn" onclick="toggleModal(false)">+</div>
 <!-- 新增编辑按钮 -->
 <div class="edit-btn" onclick="toggleEditMode()">✎</div>
+
+<!-- 原代码继续 -->
 <button onclick="showTagManager()" style="position:fixed; z-index: 1000;bottom:150px; right:30px;border:none; width:45px; height:45px; background:#1d1d5c; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px; color:#f7ebeb;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">♞</button>
 
     <div class="modal">
@@ -592,8 +693,9 @@ https://youtu.be/abc123
         ☞
     </button>
 </div>
-    <div id="postsContainer" class="posts-container"></div>
-
+<div id="postsContainer" class="posts-container">
+    <div id="pinnedContainer" class="pinned-container"></div>
+</div>
     <script>
     	// 原代码第45行修改为 ▼▼▼
 document.addEventListener('DOMContentLoaded', () => {
@@ -602,19 +704,24 @@ document.addEventListener('DOMContentLoaded', () => {
         allTags = new Set();
         const savedPosts = localStorage.getItem('posts');
         if (savedPosts) {
-            posts = JSON.parse(savedPosts).map(p => ({ 
-                ...p, 
+            posts = JSON.parse(savedPosts).map(p => ({
+                ...p,
                 id: p.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 tags: p.tags || [],
-                lastModified: p.lastModified || Date.now() // 为旧数据添加时间戳
-            }))
-// 添加一次性洗牌（Fisher-Yates算法）
-.sort(() => Math.random() - 0.5); 
-            const savedTags = localStorage.getItem('tags');
-            allTags = new Set(savedTags ? JSON.parse(savedTags) : []);
+                lastModified: p.lastModified || Date.now()
+            })).sort(() => Math.random() - 0.5);
+        }
+        const savedTags = localStorage.getItem('tags');
+        if (savedTags) {
+            allTags = new Set(JSON.parse(savedTags));
+        }
+        // 确保置顶帖子ID存在
+        if (!localStorage.getItem('pinnedPosts')) {
+            localStorage.setItem('pinnedPosts', '[]');
         }
         renderTags();
-        renderPosts(posts);
+        renderPinnedPosts(); // 渲染置顶区
+        renderPosts(posts); // 渲染普通帖子区
     } catch (error) {
         console.error('初始化失败:', error);
         alert('数据加载异常，已重置');
@@ -785,21 +892,21 @@ const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i
     const modal = document.querySelector('.modal');
     const textarea = modal.querySelector('#content');
     const input = textarea.value;
-    
+
     const { content, media, tags } = parseInput(input);
-    
+
     tags.forEach(tag => allTags.add(tag));
-    posts.unshift({ 
+    posts.unshift({
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        content, 
-        media, 
+        content,
+        media,
         tags,
-        lastModified: Date.now() // 添加创建时间戳 
+        lastModified: Date.now()
     });
 
     if (saveToLocalStorage()) {
         renderTags();
-        renderPosts(posts);
+        renderPosts(posts); // 只渲染非置顶区
         modal.style.display = 'none';
         textarea.value = '';
     } else {
@@ -807,123 +914,81 @@ const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i
     }
 }
 
-        function renderTags() {
+        // 修改后的 renderTags 函数
+function renderTags() {
     const tagContainer = document.getElementById('tagFilter');
-    tagContainer.innerHTML = '<div class="tag" onclick="renderPosts(posts); currentFilterTag = null">全部</div>';
+    tagContainer.innerHTML = '<div class="tag" onclick="clearFilter()">全部</div>';
     
-    allTags.forEach(tag => {
+    // 将 allTags 转换为数组并随机排序
+    const shuffledTags = Array.from(allTags).sort(() => Math.random() - 0.5);
+    
+    shuffledTags.forEach(tag => {
         const tagElement = document.createElement('div');
         tagElement.className = 'tag' + (currentFilterTag === tag ? ' active' : '');
         tagElement.textContent = tag;
-        tagElement.onclick = () => {
-            currentFilterTag = tag; // 更新当前选中标签
-            renderPosts(posts.filter(p => p.tags.includes(tag)));
-        };
+        tagElement.onclick = () => filterByTag(tag);
         tagContainer.appendChild(tagElement);
     });
 }
 
-        function renderPosts(postsToRender) {
-if (!postsToRender) {
-    if (currentSearchTerm) {
-        postsToRender = posts.filter(p => 
-            p.content.toLowerCase().includes(currentSearchTerm) || 
-            p.tags.some(t => t.toLowerCase().includes(currentSearchTerm))
-        );
-    } else if (currentFilterTag) {
-        postsToRender = posts.filter(p => p.tags.includes(currentFilterTag));
-    } else {
-        postsToRender = posts;
-    }
+function filterByTag(tag) {
+    currentFilterTag = tag;
+    renderPosts(posts.filter(p => p.tags.includes(tag)));
+    renderTags(); // 重新渲染标签以确保 active 状态更新
 }
-        	// 在renderPosts函数顶部添加(约第189行)
-if (!postsToRender) postsToRender = posts; // 确保有默认值
-// 保存播放状态
-const mediaStates = {};
-document.querySelectorAll('.post-media audio, .post-media video').forEach(media => {
-    const postId = media.closest('.post').dataset.id;
-    mediaStates[postId] = {
-        time: media.currentTime,
-        playing: !media.paused
-    };
-});
 
-    const container = document.getElementById('postsContainer');
-    const postsPerPage = 50;
-const totalPages = Math.ceil(postsToRender.length / postsPerPage);
-if (!window.currentPage) window.currentPage = 1;
-const startIndex = (window.currentPage - 1) * postsPerPage;
-const endIndex = startIndex + postsPerPage;
-const currentPosts = postsToRender.slice(startIndex, endIndex);
+function clearFilter() {
+    currentFilterTag = null;
+    renderPosts(posts);
+    renderTags();
+}
 
-// 获取现有帖子
-        const existingPosts = document.querySelectorAll('.post');
-        const existingPostIds = new Set(Array.from(existingPosts).map(post => post.dataset.id));
+function createPostElement(post, mediaStates) {
+    const postElement = document.createElement('div');
+    postElement.className = 'post';
+    postElement.dataset.id = post.id;
 
-        // 移除不再需要的帖子（保留播放中或包含 iframe 的帖子）
-        existingPosts.forEach(postElement => {
-            const postId = postElement.dataset.id;
-            const isInCurrentPage = currentPosts.some(p => p.id === postId);
-            const isPlaying = mediaStates[postId]?.playing;
-            const hasIframe = mediaStates[postId]?.iframe;
-            if (!isInCurrentPage && !isPlaying && !hasIframe) {
-                postElement.remove();
-            }
-        });
-    // 渲染帖子
-    currentPosts.forEach(post => {
-    	// 跳过已存在的帖子
-if (document.querySelector(`.post[data-id="${post.id}"]`)) return;
-        const postElement = document.createElement('div');
-        postElement.className = 'post';
-        postElement.dataset.id = post.id;  // 给每个帖子贴个条形码
-        const actions = document.createElement('div');
-        actions.className = 'post-actions';
-        actions.innerHTML = `
-    <button onclick="if(confirm('确定要删除此帖子吗？')) deletePost('${post.id}')">×</button>
-    <button onclick="editPost('${post.id}')">✎</button>
+    const actions = document.createElement('div');
+actions.className = 'post-actions';
+const isPinned = JSON.parse(localStorage.getItem('pinnedPosts') || '[]').includes(post.id);
+actions.innerHTML = `
+    ${isPinned ? 
+        `<button onclick="moveDownPinnedPost('${post.id}')" title="下移">↓</button>` : 
+        `<button onclick="if(confirm('确定要删除此帖子吗？')) deletePost('${post.id}')" title="删除">×</button>`}
+    <button onclick="editPost('${post.id}')" title="编辑">✎</button>
+    <button onclick="togglePinPost('${post.id}')" title="${isPinned ? '取消置顶' : '置顶'}">P</button>
 `;
-        postElement.appendChild(actions);
-        if (post.content) {
-    const contentDiv = document.createElement('pre');
-    contentDiv.style.whiteSpace = 'pre-wrap';
-    contentDiv.style.wordWrap = 'break-word';
-    contentDiv.style.margin = '0';
-    contentDiv.style.fontFamily = 'inherit';
-    contentDiv.innerHTML = post.content
-    // 新增粗体支持（**或__包裹）
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/__([^_]+)__/g, '<strong>$1</strong>')
-    // 原有斜体支持
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/_([^_]+)_/g, '<em>$1</em>')
-    // 原有删除线
-    .replace(/~([^~]+)~/g, '<del>$1</del>')
-    // 处理引用框内的水平线（>***）
-// 修改后的引用处理逻辑
-.replace(/(^>.*(\n>.*)*)/gm, (match) => {
-    // 处理引用块内的水平线并保留换行
-    const processedContent = match
-        .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">') // 转换水平线
-        .replace(/^>\s*/gm, '') // 移除每行开头的>和空格
-        .replace(/\n/g, '<br>'); // 保留换行符
+    postElement.appendChild(actions);
 
-    return `<blockquote>${processedContent}</blockquote>`;
-})
-    // 新增引用（>开头行）
-.replace(/(^>.*(\n>.*)*)/gm, (match) => {
-        // 移除每行开头的>和空格，合并内容
-        const content = match.replace(/^>\s*/gm, '');
-        return `<blockquote>${content}</blockquote>`;
-    });
-    postElement.appendChild(contentDiv);
-}
-        
-        if (post.media.length) {
-            const mediaContainer = document.createElement('div');
-            mediaContainer.className = 'post-media';
-            
-            post.media.forEach(media => {
+    if (post.content) {
+        const contentDiv = document.createElement('pre');
+        contentDiv.style.whiteSpace = 'pre-wrap';
+        contentDiv.style.wordWrap = 'break-word';
+        contentDiv.style.margin = '0';
+        contentDiv.style.fontFamily = 'inherit';
+        contentDiv.innerHTML = post.content
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+            .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+            .replace(/_([^_]+)_/g, '<em>$1</em>')
+            .replace(/~([^~]+)~/g, '<del>$1</del>')
+            .replace(/(^>.*(\n>.*)*)/gm, (match) => {
+                const processedContent = match
+                    .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
+                    .replace(/^>\s*/gm, '')
+                    .replace(/\n/g, '<br>');
+                return `<blockquote>${processedContent}</blockquote>`;
+            });
+        postElement.appendChild(contentDiv);
+    }
+
+ if (post.media.length) {
+        const mediaContainer = document.createElement('div');
+        mediaContainer.className = 'post-media';
+
+        post.media.forEach(media => {
+            // 为置顶副本和原帖子分配唯一媒体 ID
+            const mediaId = `${post.id}-${media.type}-${Math.random().toString(36).substr(2, 9)}`;
    if (media.type === 'okru') {
     mediaContainer.style.margin = '0';
     mediaContainer.style.display = 'block'; // 添加这行
@@ -1081,7 +1146,7 @@ if (document.querySelector(`.post[data-id="${post.id}"]`)) return;
                     container.style.overflow = 'hidden';
 
                     const video = document.createElement('video');
-                    video.dataset.mediaId = post.id;
+                    audio.dataset.mediaId = mediaId; // 使用唯一 ID
                     video.src = media.url;
                     video.controls = true; // 添加控制按钮
                     video.style.width = '100%'; // 设置为100%宽度
@@ -1168,7 +1233,7 @@ if (imageCount > 1) {
     const audio = document.createElement('audio');
     audio.preload = 'metadata';
     audio.src = media.url;
-    audio.dataset.mediaId = post.id
+    audio.dataset.mediaId = mediaId
 
     // 自定义控件容器
     const customControls = document.createElement('div');
@@ -1283,7 +1348,7 @@ if (imageCount > 1) {
     
     const iframe = document.createElement('iframe');
     iframe.src = `${media.url}&high_quality=1&quality=4&qn=112&autoplay=0&danmaku=0`;
-    iframe.dataset.mediaId = post.id;
+    iframe.dataset.mediaId = mediaId;
     iframe.style.position = 'absolute';
     iframe.style.top = '50%';
     iframe.style.left = '50%';
@@ -1375,30 +1440,90 @@ if (media.type === 'youtube') {
     container.appendChild(playIcon);
     mediaContainer.appendChild(container);
 }
-            });
-            
-            postElement.appendChild(mediaContainer);
+        });
+
+        postElement.appendChild(mediaContainer);
+    }
+
+    // 恢复播放状态
+    if (mediaStates[post.id]) {
+        setTimeout(() => {
+            const media = postElement.querySelector('.post-media audio, .post-media video');
+            if (media) {
+                media.currentTime = mediaStates[post.id].time;
+                if (mediaStates[post.id].playing) media.play();
+            }
+        }, 0);
+    }
+
+    return postElement;
+}
+
+
+        function renderPosts(postsToRender) {
+    // 保存播放状态
+    const mediaStates = {};
+    document.querySelectorAll('.post-media audio, .post-media video').forEach(media => {
+        const postId = media.closest('.post').dataset.id;
+        mediaStates[postId] = {
+            time: media.currentTime,
+            playing: !media.paused
+        };
+    });
+
+    // 获取置顶帖子ID
+    let pinnedPostIds = new Set(JSON.parse(localStorage.getItem('pinnedPosts') || '[]'));
+
+    // 确定要渲染的帖子
+    if (!postsToRender) {
+        if (currentSearchTerm) {
+            postsToRender = posts.filter(p =>
+                p.content.toLowerCase().includes(currentSearchTerm) ||
+                p.tags.some(t => t.toLowerCase().includes(currentSearchTerm))
+            );
+        } else if (currentFilterTag) {
+            postsToRender = posts.filter(p => p.tags.includes(currentFilterTag));
+        } else {
+            postsToRender = posts;
         }
-        
- 
-        
+    }
+
+    // 筛选非置顶帖子
+    const nonPinnedPosts = postsToRender.filter(p => !pinnedPostIds.has(p.id));
+
+    // 渲染主帖子区域
+    const container = document.getElementById('postsContainer');
+    const postsPerPage = 50;
+    const totalPages = Math.ceil(nonPinnedPosts.length / postsPerPage);
+    if (!window.currentPage) window.currentPage = 1;
+    const startIndex = (window.currentPage - 1) * postsPerPage;
+    const endIndex = startIndex + postsPerPage;
+    const currentPosts = nonPinnedPosts.slice(startIndex, endIndex);
+
+    // 获取现有非置顶帖子
+    const existingPosts = document.querySelectorAll('.post:not([data-pinned])');
+    const existingPostIds = new Set(Array.from(existingPosts).map(post => post.dataset.id));
+
+    // 移除不再需要的帖子（保留播放中的帖子）
+    existingPosts.forEach(postElement => {
+        const postId = postElement.dataset.id;
+        const isInCurrentPage = currentPosts.some(p => p.id === postId);
+        const isPlaying = mediaStates[postId]?.playing;
+        if (!isInCurrentPage && !isPlaying) {
+            postElement.remove();
+        }
+    });
+
+    // 渲染主帖子
+    currentPosts.forEach(post => {
+        if (document.querySelector(`.post[data-id="${post.id}"]:not([data-pinned])`)) return;
+        const postElement = createPostElement(post, mediaStates);
         container.appendChild(postElement);
     });
-    // 恢复播放状态
-document.querySelectorAll('.post-media audio, .post-media video').forEach(media => {
-    const postId = media.closest('.post').dataset.id;
-    const state = mediaStates[postId];
-    if (state) {
-        media.currentTime = state.time;
-        if (state.playing) media.play();
-    }
-});
 
-    // 创建分页
+    // 渲染分页
     const pagination = document.createElement('div');
     pagination.className = 'pagination';
-    
-    // 生成页码
     let pageNumbers = [];
     if (totalPages <= 7) {
         pageNumbers = Array.from({length: totalPages}, (_, i) => i + 1);
@@ -1425,106 +1550,328 @@ document.querySelectorAll('.post-media audio, .post-media video').forEach(media 
             pageElement.onclick = () => {
                 window.currentPage = num;
                 renderPosts(postsToRender);
-                document.documentElement.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+                document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
             };
         }
         pagination.appendChild(pageElement);
     });
 
-    // 改回插入到容器内
-container.appendChild(pagination);
-renderTags(); // 确保切换分页时标签状态同步
+    // 确保分页在postsContainer之后
+    const existingPagination = container.querySelector('.pagination');
+    if (existingPagination) existingPagination.remove();
+    container.appendChild(pagination);
 }
         
-       // 新增编辑模式切换函数
+        function renderPinnedPosts() {
+    const pinnedContainer = document.getElementById('pinnedContainer');
+    const pinnedPostIds = new Set(JSON.parse(localStorage.getItem('pinnedPosts') || '[]'));
+
+    // 保存播放状态
+    const mediaStates = {};
+    document.querySelectorAll('.post-media audio, .post-media video').forEach(media => {
+        const postId = media.closest('.post').dataset.id;
+        mediaStates[postId] = {
+            time: media.currentTime,
+            playing: !media.paused
+        };
+    });
+
+    // 获取当前置顶区的帖子 ID
+    const existingPosts = Array.from(pinnedContainer.querySelectorAll('.post')).map(post => post.dataset.id);
+    const newPostIds = Array.from(pinnedPostIds);
+
+    // 移除不存在的帖子
+    existingPosts.forEach(postId => {
+        if (!pinnedPostIds.has(postId)) {
+            const postElement = pinnedContainer.querySelector(`.post[data-id="${postId}"]`);
+            if (postElement) postElement.remove();
+        }
+    });
+
+    // 添加或更新帖子，并保持顺序
+    newPostIds.forEach((postId, index) => {
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+
+        const existingPostElement = pinnedContainer.querySelector(`.post[data-id="${postId}"]`);
+        const newPostElement = createPostElement(post, mediaStates);
+        newPostElement.dataset.pinned = 'true';
+
+        if (existingPostElement) {
+            // 如果帖子已存在，检查是否需要更新
+            if (existingPostElement.innerHTML !== newPostElement.innerHTML) {
+                pinnedContainer.replaceChild(newPostElement, existingPostElement);
+            }
+        } else {
+            // 插入到正确位置
+            if (index === 0) {
+                pinnedContainer.prepend(newPostElement);
+            } else {
+                const prevPostElement = pinnedContainer.querySelector(`.post[data-id="${newPostIds[index - 1]}"]`);
+                if (prevPostElement) {
+                    prevPostElement.after(newPostElement);
+                } else {
+                    pinnedContainer.appendChild(newPostElement);
+                }
+            }
+        }
+    });
+
+    pinnedContainer.classList.toggle('active', pinnedPostIds.size > 0);
+}
+
 function toggleEditMode() {
-    isEditMode = !isEditMode;
-    document.body.classList.toggle('edit-mode');
-    // 根据当前状态重新渲染 ▼▼▼
-    if (currentSearchTerm) {
-        searchPosts();
-    } else if (currentFilterTag) {
-        renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
-    } else {
-        renderPosts(posts);
-    }
+    isEditMode = !isEditMode; // 切换编辑模式状态
+    document.body.classList.toggle('edit-mode', isEditMode); // 切换 body 的 edit-mode 类
 }
 
-// 新增删除功能
-function deletePost(postId) {
-    posts = posts.filter(p => p.id !== postId);
-    if (saveToLocalStorage()) {  // 替换原来的localStorage.setItem
-        renderPosts(posts);
-    } else {
-        alert('删除失败，请重试');
-    }
-    window.currentPage = 1; // 重置到第一页
-       renderPosts(posts);
-}
-
-// 新增编辑功能
-function editPost(postId) {
+function togglePinPost(postId) {
+    let pinnedPostIds = new Set(JSON.parse(localStorage.getItem('pinnedPosts') || '[]'));
     const post = posts.find(p => p.id === postId);
     if (!post) return;
 
-    toggleModal(true); // 以编辑模式打开模态框
-    
-    const modal = document.querySelector('.modal');
-    const textarea = modal.querySelector('#content');
-    const saveBtn = modal.querySelector('#saveBtn');
-
-    // 填充内容
-    const mediaUrls = post.media.map(m => {
-    // 优先使用存储的原始链接
-    if (m.original) return m.original;
-    
-    // 兼容旧数据（没有original字段时）
-    if (m.type === 'youtube') {
-        const videoId = m.url.split('/').pop().split('?')[0];
-        return `https://youtu.be/${videoId}`;
-    } else if (m.type === 'bilibili') {
-        const bvid = new URL(m.url).searchParams.get('bvid');
-        return `https://www.bilibili.com/video/${bvid}/`;
-    } else if (m.type === 'okru') {
-        const videoId = m.url.split('/videoembed/')[1];
-        return `https://ok.ru/video/${videoId}`;
-    }
-    return m.url;
-});
-    
-    textarea.value = [
-    post.content,
-    ...mediaUrls, // 使用处理后的链接
-    ...post.tags.map(t => `#${t}`)
-].join('\n');
-
-// 修改保存按钮的点击事件处理逻辑 ▼▼▼
-saveBtn.onclick = () => {
-    const { content, media, tags } = parseInput(textarea.value);
-    Object.assign(post, { 
-        content, 
-        media, 
-        tags,
-       id: postId,
-        lastModified: Date.now() // 更新修改时间戳
+    // 保存播放状态
+    const mediaStates = {};
+    document.querySelectorAll('.post-media audio, .post-media video').forEach(media => {
+        const postId = media.closest('.post').dataset.id;
+        mediaStates[postId] = {
+            time: media.currentTime,
+            playing: !media.paused
+        };
     });
-    if (saveToLocalStorage()) {
-        // 根据当前状态重新渲染
+
+    const pinnedContainer = document.getElementById('pinnedContainer');
+    const postsContainer = document.getElementById('postsContainer');
+
+    if (pinnedPostIds.has(postId)) {
+        // 取消置顶
+        pinnedPostIds.delete(postId);
+
+        // 移除非置顶区的副本
+        const nonPinnedCopy = postsContainer.querySelector(`.post[data-id="${postId}"][data-copy="true"]`);
+        if (nonPinnedCopy) nonPinnedCopy.remove();
+
+        // 保存置顶帖子 ID
+        localStorage.setItem('pinnedPosts', JSON.stringify([...pinnedPostIds]));
+
+        // 重新渲染置顶区
+        renderPinnedPosts();
+
+        // 重新渲染非置顶区，根据当前过滤条件
         if (currentSearchTerm) {
-            searchPosts(); // 主动触发搜索刷新
+            searchPosts();
         } else if (currentFilterTag) {
             renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
         } else {
             renderPosts(posts);
         }
-        modal.style.display = 'none';
     } else {
-        alert('保存失败，请重试');
+        // 置顶
+        pinnedPostIds.add(postId);
+        const originalPostElement = document.querySelector(`.post[data-id="${postId}"]:not([data-pinned])`);
+        if (originalPostElement) {
+            // 移动原帖子到置顶区
+            originalPostElement.dataset.pinned = 'true';
+            pinnedContainer.insertBefore(originalPostElement, pinnedContainer.firstChild);
+
+            // 在原位置生成副本
+            const copyElement = createPostElement(post, {});
+            copyElement.dataset.copy = 'true';
+            const allPosts = Array.from(postsContainer.querySelectorAll('.post:not([data-pinned])'));
+            const postIndex = allPosts.findIndex(el => el === originalPostElement);
+            if (postIndex >= 0) {
+                postsContainer.insertBefore(copyElement, allPosts[postIndex]);
+            } else {
+                postsContainer.appendChild(copyElement);
+            }
+
+            // 更新置顶区显示状态
+            pinnedContainer.classList.add('active');
+        } else {
+            // 如果原帖子不存在，创建新副本
+            const postElement = createPostElement(post, mediaStates);
+            postElement.dataset.pinned = 'true';
+            pinnedContainer.insertBefore(postElement, pinnedContainer.firstChild);
+            pinnedContainer.classList.add('active');
+        }
+
+        // 保存置顶帖子 ID
+        localStorage.setItem('pinnedPosts', JSON.stringify([...pinnedPostIds]));
     }
-};
+
+    // 更新置顶按钮的 title 属性
+    document.querySelectorAll(`.post[data-id="${postId}"] .post-actions button[title]`).forEach(button => {
+        button.title = pinnedPostIds.has(postId) ? '取消置顶' : '置顶';
+    });
+}
+
+function moveDownPinnedPost(postId) {
+    const pinnedPostIds = JSON.parse(localStorage.getItem('pinnedPosts') || '[]');
+    const index = pinnedPostIds.indexOf(postId);
+
+    if (index === -1 || index === pinnedPostIds.length - 1) {
+        return;
+    }
+
+    // 交换数组中的顺序
+    [pinnedPostIds[index], pinnedPostIds[index + 1]] = [pinnedPostIds[index + 1], pinnedPostIds[index]];
+    localStorage.setItem('pinnedPosts', JSON.stringify(pinnedPostIds));
+
+    // 直接操作 DOM 交换帖子
+    const pinnedContainer = document.getElementById('pinnedContainer');
+    const currentPost = pinnedContainer.querySelector(`.post[data-id="${postId}"]`);
+    const nextPost = currentPost.nextElementSibling;
+    if (currentPost && nextPost) {
+        pinnedContainer.insertBefore(nextPost, currentPost);
+    }
+}
+
+function togglePinMode() {
+    const pinnedContainer = document.getElementById('pinnedContainer');
+    const postsContainer = document.getElementById('postsContainer');
+    
+    // 计算单列宽度
+    const postsContainerWidth = postsContainer.offsetWidth;
+    const columnGap = parseFloat(getComputedStyle(postsContainer).columnGap) || 7.5;
+    const computedStyle = getComputedStyle(postsContainer);
+    const columnCount = parseInt(computedStyle.columnCount || computedStyle.webkitColumnCount || 3);
+    const singleColumnWidth = (postsContainerWidth - (columnCount - 1) * columnGap) / columnCount;
+    
+    // 设置宽度
+    pinnedContainer.style.setProperty('--single-column-width', `${singleColumnWidth}px`);
+    
+    // 切换固定模式
+    pinnedContainer.classList.toggle('fixed');
+    
+    // 更新按钮图标
+    const toggleBtn = document.querySelector('.toggle-pin-mode-btn');
+    toggleBtn.textContent = pinnedContainer.classList.contains('fixed') ? '☂' : '☄';
+}
+
+
+
+function deletePost(postId) {
+    // Remove post from posts array
+    posts = posts.filter(p => p.id !== postId);
+
+    // Remove from pinned posts if present
+    let pinnedPostIds = new Set(JSON.parse(localStorage.getItem('pinnedPosts') || '[]'));
+    if (pinnedPostIds.has(postId)) {
+        pinnedPostIds.delete(postId);
+        localStorage.setItem('pinnedPosts', JSON.stringify([...pinnedPostIds]));
+    }
+
+    // Update tags
+    allTags.clear();
+    posts.forEach(post => {
+        post.tags.forEach(tag => allTags.add(tag));
+    });
+
+    // Save changes to localStorage
+    if (saveToLocalStorage()) {
+        // Remove post from DOM (both pinned and non-pinned)
+        document.querySelectorAll(`.post[data-id="${postId}"]`).forEach(postElement => {
+            postElement.remove();
+        });
+
+        // Update pinned container visibility
+        const pinnedContainer = document.getElementById('pinnedContainer');
+        pinnedContainer.classList.toggle('active', pinnedPostIds.size > 0);
+
+        // Re-render tags and posts
+        renderTags();
+        if (currentSearchTerm) {
+            searchPosts();
+        } else if (currentFilterTag) {
+            renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
+        } else {
+            renderPosts(posts);
+        }
+    } else {
+        alert('删除失败，请重试');
+    }
+}
+// 新增编辑功能
+function editPost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    toggleModal(true);
+    const modal = document.querySelector('.modal');
+    const textarea = modal.querySelector('#content');
+    const saveBtn = modal.querySelector('#saveBtn');
+
+    const mediaUrls = post.media.map(m => {
+        if (m.original) return m.original;
+        if (m.type === 'youtube') {
+            const videoId = m.url.split('/').pop().split('?')[0];
+            return `https://youtu.be/${videoId}`;
+        } else if (m.type === 'bilibili') {
+            const bvid = new URL(m.url).searchParams.get('bvid');
+            return `https://www.bilibili.com/video/${bvid}/`;
+        } else if (m.type === 'okru') {
+            const videoId = m.url.split('/videoembed/')[1];
+            return `https://ok.ru/video/${videoId}`;
+        }
+        return m.url;
+    });
+
+    textarea.value = [
+        post.content,
+        ...mediaUrls,
+        ...post.tags.map(t => `#${t}`)
+    ].join('\n');
+
+    saveBtn.onclick = () => {
+        const { content, media, tags } = parseInput(textarea.value);
+        Object.assign(post, {
+            content,
+            media,
+            tags,
+            id: postId,
+            lastModified: Date.now()
+        });
+        if (saveToLocalStorage()) {
+            // 保存置顶区当前播放状态
+            const mediaStates = {};
+            const pinnedContainer = document.getElementById('pinnedContainer');
+            const pinnedPostElement = pinnedContainer.querySelector(`.post[data-id="${postId}"]`);
+            if (pinnedPostElement) {
+                const media = pinnedPostElement.querySelector('.post-media audio, .post-media video');
+                if (media) {
+                    mediaStates[postId] = {
+                        time: media.currentTime,
+                        playing: !media.paused
+                    };
+                }
+                // 更新置顶区（原帖或副本）
+                const newElement = createPostElement(post, mediaStates);
+                newElement.dataset.pinned = 'true';
+                if (pinnedPostElement.dataset.moved) newElement.dataset.moved = 'true';
+                pinnedContainer.replaceChild(newElement, pinnedPostElement);
+            }
+
+            // 更新非置顶区
+            const postsContainer = document.getElementById('postsContainer');
+            const nonPinnedPostElement = postsContainer.querySelector(`.post[data-id="${postId}"]:not([data-pinned])`);
+            if (nonPinnedPostElement) {
+                const newElement = createPostElement(post, {}); // 不播放
+                postsContainer.replaceChild(newElement, nonPinnedPostElement);
+            }
+
+            // 刷新非置顶区（如果在搜索或标签过滤模式下）
+            if (currentSearchTerm) {
+                searchPosts();
+            } else if (currentFilterTag) {
+                renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
+            } else {
+                renderPosts(posts);
+            }
+            modal.style.display = 'none';
+        } else {
+            alert('保存失败，请重试');
+        }
+    };
 }
   
 
@@ -1922,6 +2269,8 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('beforeinstallprompt', e => {
       console.log('PWA 可安装');
     });
+    
+    
 </script>
 </body>
-</html>
+</html>  
