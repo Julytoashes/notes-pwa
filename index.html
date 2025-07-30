@@ -579,7 +579,7 @@ blockquote hr.blockquote-divider {
     box-sizing: border-box;
     display: none; /* 默认隐藏 */
     width: 100%; /* 默认占满列宽 */
-    /* 移除 max-height 和 overflow-y，让高度自适应 */
+    
 }
 
 .pinned-container.active {
@@ -616,6 +616,10 @@ blockquote hr.blockquote-divider {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* 添加阴影以突出悬浮效果 */
     z-index: 900; /* 确保高于其他元素 */
     margin-left: 18px; /* 移除左边距以对齐 */
+    max-height: 90vh; /* 限制最大高度，允许滚动 */
+    overflow-y: auto; /* 启用内部垂直滚动 */
+    scrollbar-width: 2px; /* 细滚动条 */
+    scrollbar-color: rgba(29, 29, 92, 0.2);
 }
 
 /* Webkit 浏览器滚动条样式 */
