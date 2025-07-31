@@ -18,8 +18,8 @@
         body { 
             font-family: 'KingHwa', "KaiTi", serif;
             padding: 20px; 
-            background-color: #1d1d5c; /* 网页背景色 */
-            color: #f7ebeb; /* 正文颜色 */
+            background-color: rgb(var(--theme-background));
+            color: rgb(var(--theme-highlight));
             font-size: 11.5px;
            
     background-size: 4px 30px;
@@ -28,6 +28,7 @@
         .post pre, .post div {
     font-weight: 200;
 }
+/* 顶栏（标签过滤器） */
 .tag-filter {
     display: flex;
     gap: 2px;
@@ -36,10 +37,10 @@
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #1d1d5c;
+    background: rgb(var(--theme-background)); /* 默认纯色背景 */
     z-index: 1000;
     padding: 10px 20px;
-    padding-right: 20px; /* 新增 */
+    padding-right: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     padding-bottom: 15px;
     height: auto;
@@ -48,7 +49,112 @@
     white-space: nowrap;
     flex-wrap: nowrap;
     scrollbar-width: thin;
-    scrollbar-color: #1d1d5c #1d1d5c;
+    scrollbar-color: rgba(var(--theme-background), 0.2) rgba(var(--theme-background), 0.2);
+}
+
+/* 毛玻璃模式下的顶栏 */
+.glass-background .tag-filter {
+    background: rgba(var(--glass-background, 28, 45, 34), var(--glass-opacity, 0.6));
+    backdrop-filter: blur(var(--glass-blur, 7px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 7px));
+}
+
+/* 底栏（分页） */
+.pagination {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgb(var(--theme-background)); /* 默认纯色背景 */
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+    padding: 4px 0;
+    z-index: 998;
+    margin: 0;
+    width: 100%;
+    transform: none !important;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* 毛玻璃模式下的底栏 */
+.glass-background .pagination {
+    background: rgba(var(--glass-background, 28, 45, 34), var(--glass-opacity, 0.6));
+    backdrop-filter: blur(var(--glass-blur, 7px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 7px));
+}
+
+/* 通用按钮样式 */
+.glass-button {
+    background: rgb(var(--theme-background)); /* 默认纯色背景 */
+    color: rgb(var(--theme-highlight));
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 毛玻璃模式下的按钮 */
+.glass-background .glass-button {
+    background: rgba(var(--glass-background, 28, 45, 34), var(--glass-opacity, 0.6));
+    backdrop-filter: blur(var(--glass-blur, 7px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 7px));
+}
+
+.add-btn {
+    position: fixed;
+    bottom: 50px;
+    right: 30px;
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+    z-index: 1000;
+}
+
+.edit-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+    z-index: 1000;
+}
+
+.theme-btn {
+    position: fixed;
+    bottom: 200px;
+    right: 30px;
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+    z-index: 1000;
+}
+
+.tag-manager-btn {
+    position: fixed;
+    bottom: 150px;
+    right: 30px;
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+    z-index: 1000;
+}
+
+.search-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+}
+
+.export-btn, .import-btn, .toggle-pin-mode-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+    position: relative;
 }
 
 .tag-filter::after { /* 新增伪元素 */
@@ -61,7 +167,7 @@
 /* 针对Webkit浏览器（Chrome, Safari等）的滚动条样式 */
 .tag-filter::-webkit-scrollbar {
     height: 1px;
-    background-color: #1d1d5c; /* 轨道背景色 */
+    background-color: rgb(var(--theme-background));
 }
 
 .tag-filter::-webkit-scrollbar-thumb {
@@ -71,12 +177,12 @@
 }
 
 .tag-filter::-webkit-scrollbar-track {
-    background: #1d1d5c; /* 轨道颜色 */
+    background: rgb(var(--theme-background));
 }
 
  .tag {
     background-color: transparent;
-    color: #ba5757;
+    color: rgb(var(--theme-foreground));
     font-size: 12px;
     padding: 5px 6px;
     cursor: pointer;
@@ -155,8 +261,8 @@
 }
 
 .post-actions button {
-    background-color: #141440 !important; /* 标签橙色 */
-    color: #f7ebeb !important; /* 正文颜色 */
+    background-color: rgb(var(--theme-background)) !important;
+    color: rgb(var(--theme-highlight)) !important;
     border: none;
     width: 25px;
     height: 25px;
@@ -195,19 +301,7 @@
 .posts-container {
     position: relative;
 }
-.pagination {
-    position: fixed;
-    left: 0;
-    right: 0;       /* 左右贴边 */
-    bottom: 0;      /* 紧贴底部 */
-    background: #1d1d5c;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
-    padding: 4px 0;
-    z-index: 998;
-    margin: 0;      /* 清除默认外边距 */
-    width: 100%;    /* 强制全宽 */
-    transform: none !important; /* 移除任何变换 */
-}
+
     
 
         /* 新增输入框样式 */
@@ -218,14 +312,14 @@
             right: 30px;
             width: 45px;
             height: 45px;
-            background: #1d1d5c; /* 加号键背景色 */
+            background: rgb(var(--theme-background));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             font-size: 24px;
-            color: #f7ebeb; /* 加号键颜色 */
+            color: rgb(var(--theme-highlight));
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important; /* 橙色阴影效果 */
         }
         .edit-btn {
@@ -235,14 +329,14 @@
     right: 30px;
     width: 45px;
     height: 45px;
-    background: #1d1d5c; /* 编辑键背景色 */
+    background: rgb(var(--theme-background));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 24px;
-    color: #f7ebeb;  /* 编辑键颜色 */
+    color: rgb(var(--theme-highlight));
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important; 
 }
         .modal {
@@ -252,10 +346,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #ba5757;
+            background: rgb(var(--theme-foreground));
             padding: 20px;
             border-radius: 10px;
-            border: 0px solid #1d1d5c;
+            border: 0px solid rgb(var(--theme-background));
             width: 400px;
         }
    #content {
@@ -264,7 +358,7 @@
     background: transparent;
     border: none;
     outline: none;
-    color: #f7ebeb; /* 输入字色 */
+    color: rgb(var(--theme-highlight));
     padding: 10px;
     margin-bottom: 10px;
     white-space: pre-wrap;
@@ -276,7 +370,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: rgba(186, 87, 87, 0.25);
+        background: rgb(var(--theme-foreground));
         padding: 20px;
         border-radius: 10px;
         border: 0px solid #000000;
@@ -295,7 +389,7 @@
     }
 
     .tag-count {
-        color: #f7ebeb; /* 标签使用次数色 */
+        color: rgb(var(--theme-highlight));
         font-size: 0.9em;
         margin-right: 10px;
     }
@@ -311,7 +405,7 @@
    
 }
 .page-number {
-    color: #ba5757; /* 页码色 */
+    color: rgb(var(--theme-foreground));
     font-size: 12px;
     cursor: pointer;
     padding: 5px 10px;
@@ -351,7 +445,7 @@
     cursor: pointer;
     opacity: 0.7;
     transition: opacity 0.2s;
-    color: #f7ebeb;
+    color: rgb(var(--theme-highlight));
     font-size: 24px;
     z-index: 1;
 }
@@ -360,33 +454,33 @@
 
 /* 针对搜索框的placeholder */
 #searchInput::placeholder { /* 现代浏览器 */
-    color: #ba5757; /* 使用与标签相同的暗红色 */
+    color: rgb(var(--theme-foreground));
     opacity: 0.4; /* 确保颜色不透明 */
 }
 
 #searchInput::-webkit-input-placeholder { /* Chrome/Safari */
-    color: #ba5757;
+    color: rgb(var(--theme-foreground));
 }
 #searchInput::-moz-placeholder { /* Firefox 19+ */
-    color: #ba5757;
+    color: rgb(var(--theme-foreground));
 }
 #searchInput:-ms-input-placeholder { /* IE 10+ */
-    color: #ba5757;
+    color: rgb(var(--theme-foreground));
 }
 
 /* 针对模态框输入区的placeholder */
 #content::placeholder {
-    color: #1d1d5c;
+    color: rgb(var(--theme-background));
     opacity: 0.4;
 }
 #content::-webkit-input-placeholder {
-    color: #1d1d5c;
+    color: rgb(var(--theme-background));
 }
 #content::-moz-placeholder {
-    color: #1d1d5c;
+    color: rgb(var(--theme-background));
 }
 #content:-ms-input-placeholder {
-    color: #1d1d5c;
+    color: rgb(var(--theme-background));
 }
 .bilibili-player-video-top,
 .bilibili-player-video-info,
@@ -454,7 +548,7 @@ audio::-webkit-slider-thumb {
     -webkit-appearance: none !important;
     width: 2px !important;
     height: 2px !important;
-    background: #ba5757 !important;
+    background: rgb(var(--theme-foreground)) !important;
     border-radius: 50% !important;
     cursor: pointer !important;
     margin-top: -2px !important;
@@ -464,7 +558,7 @@ audio::-webkit-slider-thumb {
 audio::-moz-range-thumb {
     width: 2px !important;
     height: 2px !important;
-    background: #ba5757 !important;
+    background: rgb(var(--theme-foreground)) !important;
     border-radius: 50% !important;
     cursor: pointer !important;
 }
@@ -473,7 +567,7 @@ input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
     height: 2px;
-    background: #1d1d5c;
+    background: rgb(var(--theme-background));
     border-radius: 1px;
     margin: 0 1px;
 }
@@ -492,7 +586,7 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-moz-range-thumb {
     width: 8px;
     height: 8px;
-    background: #ba5757;
+    background: rgb(var(--theme-foreground));
     border-radius: 50%;
     cursor: pointer;
     border: none;
@@ -505,14 +599,14 @@ input[type="range"]::-webkit-slider-runnable-track {
 
 input[type="range"]::-moz-range-track {
   height: 1px !important;
-  background: rgba(186, 87, 87, 0.2) !important;
+  background: rgba(var(--theme-foreground), 0.2); !important;
 }
 blockquote {
-    border-left: 1.5px solid #14143e;
+    border-left: 1.5px solid rgb(var(--theme-background));
     margin: 0.3em 0;  /* 简化上下边距的写法 */
     padding: 4px 8px 4px 8px;  /* 移除右内边距，只保留左内边距 */
-    color: #a8a8e4;
-    background: rgba(24, 11, 36, 0.1);
+    color: rgb(var(--theme-secondary));
+    background: rgba(var(--theme-background), 0.1);
     font-size: 9px;
     font-family: 'Arial, sans-serif';
     font-weight: 400;
@@ -526,12 +620,12 @@ blockquote {
 hr {
     border: 0;
     height: 0;
-    border-top: 1px dashed rgba(168,168,228,0.3); /* 备用虚线样式 */
+    border-top: 1px dashed rgba(var(--theme-secondary), 0.3); /* 备用虚线样式 */
     margin: 5px 0;
 }
 /* 下划线样式 */
 .underline-divider {
-    border-bottom: 1px solid #a8a8e4;
+    border-bottom: 1px solid rgb(var(--theme-secondary));
     margin: 3px 0 !important;
     width: 100%;
 }
@@ -540,7 +634,7 @@ hr {
 /* 引用框内水平线补偿 */
 blockquote hr.blockquote-divider {
     border: none;
-    border-top: 1px dashed rgba(168, 168, 228, 0.3);
+    border-top: 1px dashed rgba(var(--theme-secondary), 0.3);
     margin: 5px -8px; /* 抵消引用框的内边距 */
     width: calc(100% + 16px); /* 扩展宽度以对齐视觉边缘 */
 }
@@ -558,8 +652,8 @@ blockquote hr.blockquote-divider {
             to bottom,
             transparent 0px,
             transparent 30px,
-            rgba(186, 87, 87, 0.2) 30px,
-            rgba(186, 87, 87, 0.2) 31px,
+            rgba(var(--theme-foreground), 0.2) 30px,
+            rgba(var(--theme-foreground), 0.2) 31px,
             transparent 31px,
             transparent 30px
         ),
@@ -567,8 +661,8 @@ blockquote hr.blockquote-divider {
             to right,
             transparent 0px,
             transparent 30px,
-            rgba(186, 87, 87, 0.2) 30px,
-            rgba(186, 87, 87, 0.2) 31px,
+            rgba(var(--theme-foreground), 0.2) 30px,
+            rgba(var(--theme-foreground), 0.2) 31px,
             transparent 31px,
             transparent 30px
         );
@@ -596,8 +690,8 @@ blockquote hr.blockquote-divider {
             to bottom,
             transparent 0px,
             transparent 30px,
-            rgba(186, 87, 87, 0.2) 30px,
-            rgba(186, 87, 87, 0.2) 31px,
+            rgba(var(--theme-foreground), 0.2) 30px,
+            rgba(var(--theme-foreground), 0.2) 31px,
             transparent 31px,
             transparent 30px
         ),
@@ -605,12 +699,12 @@ blockquote hr.blockquote-divider {
             to right,
             transparent 0px,
             transparent 30px,
-            rgba(186, 87, 87, 0.2) 30px,
-            rgba(186, 87, 87, 0.2) 31px,
+            rgba(var(--theme-foreground), 0.2) 30px,
+            rgba(var(--theme-foreground), 0.2) 31px,
             transparent 31px,
             transparent 30px
         ),
-        rgba(29, 29, 92, 0.2); /* 半透明底色 */
+        rgba(var(--theme-background), 0.2); /* 半透明底色 */
     backdrop-filter: blur(4px); /* 磨砂玻璃模糊效果 */
     -webkit-backdrop-filter: blur(4px); /* 兼容 Webkit 浏览器 */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* 添加阴影以突出悬浮效果 */
@@ -619,7 +713,7 @@ blockquote hr.blockquote-divider {
     max-height: 90vh; /* 限制最大高度，允许滚动 */
     overflow-y: auto; /* 启用内部垂直滚动 */
     scrollbar-width: 2px; /* 细滚动条 */
-    scrollbar-color: rgba(29, 29, 92, 0.2);
+    scrollbar-color: rgba(var(--theme-background), 0.2);
 }
 
 /* Webkit 浏览器滚动条样式 */
@@ -627,11 +721,11 @@ blockquote hr.blockquote-divider {
     width: 1px;
 }
 .pinned-container::-webkit-scrollbar-thumb {
-    background-color: rgba(29, 29, 92, 0.2);
+    background-color: rgba(var(--theme-background), 0.2);
     border-radius: 1px;
 }
 .pinned-container::-webkit-scrollbar-track {
-    background: rgba(29, 29, 92, 0.2);
+    background: rgba(var(--theme-background), 0.2);
 }
 
 /* 确保置顶帖子样式一致 */
@@ -646,56 +740,309 @@ blockquote hr.blockquote-divider {
 }
 
 
+.okru-container {
+    background-color: rgb(var(--theme-background));
+}
+.okru-play-icon {
+    border-color: transparent transparent transparent rgba(var(--theme-highlight), 0.3);
+}
+
+.custom-controls {
+    background-color: rgba(var(--theme-background), 0);
+}
+.play-button {
+    color: rgb(var(--theme-secondary));
+}
+.time-display {
+    color: rgba(var(--theme-secondary), 0.7);
+}
+.youtube-play-icon {
+    border-left: 12px solid rgba(var(--theme-highlight), 0.2);
+}
+.conflict-dialog {
+    background: rgb(var(--theme-background));
+}
+.conflict-title {
+    color: rgb(var(--theme-foreground));
+    margin: 0 0 15px 0;
+}
+.conflict-btn {
+    background: rgb(var(--theme-highlight));
+    color: rgb(var(--theme-background));
+    border: none;
+    padding: 6px 15px;
+    border-radius: 5px;
+}
+
+/* 主题管理器滚动条样式 */
+.theme-manager::-webkit-scrollbar {
+    width: 1px;
+}
+.theme-manager::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--theme-background), 0.2);
+    border-radius: 1px;
+}
+.theme-manager::-webkit-scrollbar-track {
+    background: rgba(var(--theme-background), 0.2);
+}
+
+/* 背景媒体容器 */
+.background-media-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2; /* 在毛玻璃之下 */
+    overflow: hidden;
+}
+.background-media-container img,
+.background-media-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 确保视频/图片平铺覆盖 */
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* 毛玻璃效果 */
+.glass-background::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* 在内容之下，背景之上 */
+    background: rgba(var(--glass-background, 28, 45, 34), var(--glass-opacity, 0.6));
+    backdrop-filter: blur(var(--glass-blur, 7px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 7px));
+}
+
+/* 雨滴效果 */
+.rain-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0; /* 在毛玻璃之上，内容之下 */
+    pointer-events: none; /* 防止雨滴干扰交互 */
+}
+.rain {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    animation: fall linear infinite;
+}
+@keyframes fall {
+    0% {
+        transform: translateY(-100vh);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+}
+
+/* 更新主题变量 */
+:root {
+    --theme-background: 29, 29, 92; /* #1d1d5c */
+    --theme-foreground: 186, 87, 87; /* #ba5757 */
+    --theme-secondary: 168, 168, 228; /* #a8a8e4 */
+    --theme-highlight: 247, 235, 235; /* #f7ebeb */
+    --glass-background: 28, 45, 34; /* #1c2d22，毛玻璃默认颜色 */
+    --glass-opacity: 0.6; /* 默认透明度 */
+    --glass-blur: 7px; /* 默认模糊度 */
+}
+
+.search-box {
+    position: fixed;
+    bottom: 100px;
+    left: 30px; /* 调整为靠左，留出边距 */
+    z-index: 1000;
+    display: flex;
+    flex-direction: row; /* 改为 row，确保按钮在输入框左侧 */
+    align-items: center;
+    gap: 5px;
+}
+
+.search-box input#searchInput {
+    padding: 5px;
+    border-radius: 3px;
+    border: none;
+    background: transparent;
+    color: rgb(var(--theme-foreground));
+    width: 150px; /* 固定宽度，避免拉伸 */
+    outline: none;
+}
+
+
+.bottom-left-buttons {
+    position: fixed;
+    bottom: 50px;
+    left: 30px;
+    z-index: 999;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px; /* 按钮间距 */
+}
+
+
+}
 
     </style>
 </head>
 <body>
-	<div style="position:fixed;z-index: 999; bottom:50px; left:30px; display:flex; gap:5px;">
-    <button onclick="exportPosts()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">⇩</button>
+	<!-- 背景媒体容器 -->
+    <div class="background-media-container"></div>
+    <!-- 雨滴容器 -->
+    <div class="rain-container"></div>
+	<div class="bottom-left-buttons">
+    <button class="export-btn glass-button" onclick="exportPosts()">⇩</button>
     <input type="file" id="importFile" style="display:none" onchange="importPosts(this)">
-    <button onclick="document.getElementById('importFile').click()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">⇧</button>
-    <div class="toggle-pin-mode-btn" onclick="togglePinMode()" style="background:#1d1d5c; color:#f7ebeb; border:none; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">☂</div>
+    <button class="import-btn glass-button" onclick="document.getElementById('importFile').click()">⇧</button>
+<button class="toggle-pin-mode-btn glass-button" onclick="togglePinMode()">☂</button>
 </div>
-  <!-- 原代码 -->
-<div class="add-btn" onclick="toggleModal(false)">+</div>
-<!-- 新增编辑按钮 -->
-<div class="edit-btn" onclick="toggleEditMode()">✎</div>
 
+  <!-- 原代码 -->
+<div class="add-btn glass-button" onclick="toggleModal(false)">+</div>
+<!-- 新增编辑按钮 -->
+<div class="edit-btn glass-button" onclick="toggleEditMode()">✎</div>
+<button class="theme-btn glass-button" onclick="showThemeSettings()" style="bottom:200px; right:30px;">☃</button>
+<div class="theme-manager" id="themeManager" style="display:none; position:fixed; z-index:1001; top:50%; left:50%; transform:translate(-50%,-50%); background:rgb(var(--theme-foreground)); padding:20px; border-radius:10px; max-width:90%; max-height:90vh; overflow-y:auto;">
+    <h3 style="color:rgb(var(--theme-highlight)); margin-bottom:20px;">主题设置</h3>
+    <div id="themeSettings">
+        <div style="margin-bottom:15px;">
+            <label style="color:rgb(var(--theme-highlight));">主题名称：</label>
+            <input type="text" id="themeName" placeholder="输入主题名称" style="padding:5px; border:none; background:rgba(0,0,0,0.1); color:rgb(var(--theme-highlight)); width:100%; border-radius:3px;">
+        </div>
+        <div style="margin-bottom:15px;">
+            <label style="color:rgb(var(--theme-highlight));">背景类型：</label>
+            <select id="backgroundType" style="padding:5px; border:none; background:rgba(0,0,0,0.1); color:rgb(var(--theme-highlight)); width:100%; border-radius:3px;">
+                <option value="solid">纯色背景</option>
+                <option value="glass">毛玻璃背景</option>
+            </select>
+        </div>
+        <div id="solidColorSettings" style="margin-bottom:15px;">
+            <label style="color:rgb(var(--theme-highlight));">纯色背景颜色：</label>
+            <input type="color" id="solidBackgroundColor" style="width:100%; height:30px; border:none; cursor:pointer;">
+        </div>
+        <div id="glassSettings" style="display:none;">
+            <div style="margin-bottom:15px;">
+                <label style="color:rgb(var(--theme-highlight));">毛玻璃背景颜色：</label>
+                <input type="color" id="glassBackgroundColor" value="#1c2d22" style="width:100%; height:30px; border:none; cursor:pointer;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="color:rgb(var(--theme-highlight));">毛玻璃背景透明度（0-1）：</label>
+                <input type="range" id="glassOpacity" min="0" max="1" step="0.01" value="0.6" style="width:100%;">
+                <span id="glassOpacityValue" style="color:rgb(var(--theme-highlight));">0.6</span>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="color:rgb(var(--theme-highlight));">毛玻璃模糊度（px）：</label>
+                <input type="range" id="glassBlur" min="0" max="20" step="1" value="7" style="width:100%;">
+                <span id="glassBlurValue" style="color:rgb(var(--theme-highlight));">7</span>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="color:rgb(var(--theme-highlight));">背景图片/视频/GIF URL：</label>
+                <input type="text" id="backgroundMedia" placeholder="输入图片、视频或GIF链接" style="padding:5px; border:none; background:rgba(0,0,0,0.1); color:rgb(var(--theme-highlight)); width:100%; border-radius:3px;">
+            </div>
+            <div id="videoSpeedSettings" style="display:none; margin-bottom:15px;">
+                <label style="color:rgb(var(--theme-highlight));">视频播放速度（0.1-2）：</label>
+                <input type="range" id="videoSpeed" min="0.1" max="2" step="0.1" value="1" style="width:100%;">
+                <span id="videoSpeedValue" style="color:rgb(var(--theme-highlight));">1</span>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="color:rgb(var(--theme-highlight));">启用雨滴效果：</label>
+                <input type="checkbox" id="enableRain" style="margin-left:10px;">
+            </div>
+            <div id="rainSettings" style="display:none;">
+                <div style="margin-bottom:15px;">
+                    <label style="color:rgb(var(--theme-highlight));">雨滴数量（10-200）：</label>
+                    <input type="range" id="rainCount" min="10" max="200" step="1" value="100" style="width:100%;">
+                    <span id="rainCountValue" style="color:rgb(var(--theme-highlight));">100</span>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="color:rgb(var(--theme-highlight));">雨滴下落速度（秒）：</label>
+                    <input type="range" id="rainSpeed" min="0.5" max="5" step="0.1" value="2" style="width:100%;">
+                    <span id="rainSpeedValue" style="color:rgb(var(--theme-highlight));">2</span>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom:15px;">
+            <label style="color:rgb(var(--theme-highlight));">主要颜色设置：</label>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div>
+                    <label style="color:rgb(var(--theme-highlight));">背景颜色 (深蓝)：</label>
+                    <input type="color" id="themeBackground" value="#1d1d5c" style="width:100%; height:30px; border:none; cursor:pointer;">
+                </div>
+                <div>
+                    <label style="color:rgb(var(--theme-highlight));">前景颜色 (橙)：</label>
+                    <input type="color" id="themeForeground" value="#ba5757" style="width:100%; height:30px; border:none; cursor:pointer;">
+                </div>
+                <div>
+                    <label style="color:rgb(var(--theme-highlight));">次要颜色 (浅紫)：</label>
+                    <input type="color" id="themeSecondary" value="#a8a8e4" style="width:100%; height:30px; border:none; cursor:pointer;">
+                </div>
+                <div>
+                    <label style="color:rgb(var(--theme-highlight));">高亮颜色 (白)：</label>
+                    <input type="color" id="themeHighlight" value="#f7ebeb" style="width:100%; height:30px; border:none; cursor:pointer;">
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom:15px;">
+            <label style="color:rgb(var(--theme-highlight));">保存的主题方案：</label>
+            <select id="themeSelect" style="padding:5px; border:none; background:rgba(0,0,0,0.1); color:rgb(var(--theme-highlight)); width:100%; border-radius:3px;">
+                <option value="">选择已有主题</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button onclick="saveTheme()" style="background:rgb(var(--theme-highlight)); color:rgb(var(--theme-background)); border:none; padding:8px 20px; border-radius:5px;">保存主题</button>
+            <button onclick="applyTheme()" style="background:rgb(var(--theme-highlight)); color:rgb(var(--theme-background)); border:none; padding:8px 20px; border-radius:5px;">应用主题</button>
+            <button onclick="exportThemes()" style="background:rgb(var(--theme-highlight)); color:rgb(var(--theme-background)); border:none; padding:8px 20px; border-radius:5px;">导出主题</button>
+            <input type="file" id="importThemeFile" style="display:none" onchange="importThemes(this)">
+            <button onclick="document.getElementById('importThemeFile').click()" style="background:rgb(var(--theme-highlight)); color:rgb(var(--theme-background)); border:none; padding:8px 20px; border-radius:5px;">导入主题</button>
+            <button onclick="document.getElementById('themeManager').style.display='none'" style="background:rgb(var(--theme-highlight)); color:rgb(var(--theme-background)); border:none; padding:8px 20px; border-radius:5px;">关闭</button>
+        </div>
+    </div>
+</div>
 <!-- 原代码继续 -->
-<button onclick="showTagManager()" style="position:fixed; z-index: 1000;bottom:150px; right:30px;border:none; width:45px; height:45px; background:#1d1d5c; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px; color:#f7ebeb;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">♞</button>
+<button class="tag-manager-btn glass-button" onclick="showTagManager()" style="bottom:150px; right:30px;">♞</button>
+
 
     <div class="modal">
     <textarea id="content" placeholder="输入内容、媒体链接和标签（示例）：
 今天发现一个好视频
 https://youtu.be/abc123
-#音乐 #推荐
+#音乐 
+#推荐
 搜索：空格=与 /斜杠=或  双星号是粗体
 单星号斜体
 浪号是删除
 三星号是水平线
 大于号是引用内容"></textarea>
     <div style="display:flex;gap:10px;justify-content:center;">
-        <button id="saveBtn" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">✔</button>
+        <button id="saveBtn" style="background:rgb(var(--theme-highlight));color:rgb(var(--theme-background));border:none;padding:8px 20px;border-radius:5px;">✔</button>
         
     </div>
 </div>
 <div class="tag-manager" id="tagManager">
-    <h3 style="color:#e6d2f9;margin-bottom:20px;">标签管理</h3>
+    <h3 style="color:rgb(var(--theme-secondary));margin-bottom:20px;">标签管理</h3>
     <div id="tagList"></div>
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;">
-        <button onclick="cleanUnusedTags()" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">清理未使用标签</button>
-        <button onclick="document.getElementById('tagManager').style.display='none'" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">关闭</button>
+        <button onclick="cleanUnusedTags()" style="background:rgb(var(--theme-highlight));;color:rgb(var(--theme-background));border:none;padding:8px 20px;border-radius:5px;">清理未使用标签</button>
+        <button onclick="document.getElementById('tagManager').style.display='none'" style="background:rgb(var(--theme-highlight));color:rgb(var(--theme-background));border:none;padding:8px 20px;border-radius:5px;">关闭</button>
     </div>
 </div>
 
     <div id="tagFilter" class="tag-filter"></div>
-    <div class="search-box" style="position:fixed;bottom:100px;left:-30px;z-index:1000;display:flex;flex-direction:row-reverse;align-items:center;gap:5px;">
-    <input type="text" id="searchInput" placeholder="☃☂☀" 
-        style="padding:5px;border-radius:3px;border:none;background:transparent;color:#ba5757;width:50%;outline:none;">
-    <button onclick="searchPosts()" 
-        style="background:#1d1d5c;color:#f7ebeb;border:none;width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;">
-        ☞
-    </button>
+<div class="search-box">
+    <button class="search-btn glass-button" onclick="searchPosts()">☞</button>
+    <input type="text" id="searchInput" placeholder="☃☂☀">
 </div>
 <div id="postsContainer" class="posts-container">
     <div id="pinnedContainer" class="pinned-container"></div>
@@ -1003,7 +1350,7 @@ actions.innerHTML = `
     container.style.width = '100%';
     container.style.aspectRatio = '4/3';
     container.style.cursor = 'pointer';
-    container.style.backgroundColor = '#1d1d5c';
+    container.classList.add('okru-container');
     container.style.overflow = 'hidden'; // 隐藏溢出部分
     
     // 从帖子内容中提取多个海报URL
@@ -1071,7 +1418,7 @@ actions.innerHTML = `
         playIcon.style.height = '0';
         playIcon.style.borderStyle = 'solid';
         playIcon.style.borderWidth = '10px 0 10px 18px';
-        playIcon.style.borderColor = 'transparent transparent transparent rgba(255, 255, 255, 0.3)';
+        playIcon.classList.add('okru-play-icon');
         playIcon.style.marginLeft = '5px';
         
         playButton.appendChild(playIcon);
@@ -1245,7 +1592,7 @@ if (imageCount > 1) {
     customControls.style.height = '30px';
     customControls.style.display = 'flex';
     customControls.style.alignItems = 'center';
-    customControls.style.backgroundColor = 'rgba(84,84,133,0)';
+    customControls.classList.add('custom-controls');
     customControls.style.borderRadius = '5px';
     customControls.style.gap = '0'; // 减少控件间距
     customControls.style.padding = '0'; // 移除内边距
@@ -1256,7 +1603,7 @@ if (imageCount > 1) {
     playButton.innerHTML = '▶';
     playButton.style.backgroundColor = 'transparent';
     playButton.style.border = 'none';
-    playButton.style.color = '#8d8aba';
+    playButton.classList.add('play-button');
     playButton.style.cursor = 'pointer';
     playButton.style.padding = '0';
     playButton.style.margin = '0';
@@ -1280,7 +1627,7 @@ if (imageCount > 1) {
     // 时间显示
     const timeDisplay = document.createElement('span');
     timeDisplay.style.fontFamily = 'Arial, sans-serif';
-    timeDisplay.style.color = 'rgba(141, 138, 186, 0.7)';
+    timeDisplay.classList.add('time-display');
     timeDisplay.style.fontSize = '9px';
     timeDisplay.style.whiteSpace = 'nowrap';
     timeDisplay.style.minWidth = '60px'; // 减少最小宽度
@@ -1406,7 +1753,7 @@ if (media.type === 'youtube') {
     playIcon.style.height = '0';
     playIcon.style.borderTop = '8px solid transparent';
     playIcon.style.borderBottom = '8px solid transparent';
-    playIcon.style.borderLeft = '12px solid rgba(255, 255, 255, 0.2)';
+    playIcon.classList.add('youtube-play-icon');
     
     // 点击时替换为iframe
     container.onclick = () => {
@@ -1900,8 +2247,8 @@ function showTagManager() {
             <div style="display:flex;align-items:center;">
                 <span class="tag-count">使用次数: ${tagCounts[tag]}</span>
                 <div class="tag-actions">
-                    <button onclick="renameTag('${tag}')" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:4px 8px;border-radius:3px;">重命名</button>
-                    <button onclick="deleteTag('${tag}')" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:4px 8px;border-radius:3px;">删除</button>
+                    <button onclick="renameTag('${tag}')" style="background:rgb(var(--theme-highlight));color:rgba(var(--theme-background));border:none;padding:4px 8px;border-radius:3px;">重命名</button>
+                    <button onclick="deleteTag('${tag}')" style="background:rgb(var(--theme-highlight));rgba(var(--theme-background));border:none;padding:4px 8px;border-radius:3px;">删除</button>
                 </div>
             </div>
         `;
@@ -2130,7 +2477,7 @@ function showConflictDialog(conflict) {
         dialog.style.top = '50%';
         dialog.style.left = '50%';
         dialog.style.transform = 'translate(-50%, -50%)';
-        dialog.style.background = '#1d1d5c';
+        dialog.classList.add('conflict-dialog');
         dialog.style.padding = '20px';
         dialog.style.borderRadius = '10px';
         dialog.style.zIndex = '10000';
@@ -2140,11 +2487,11 @@ function showConflictDialog(conflict) {
         const diffHtml = generateDiffHtml(conflict.existing, conflict.imported);
         
         dialog.innerHTML = `
-            <h3 style="color:#ba5757;margin:0 0 15px 0">发现内容冲突</h3>
+         <h3 class="conflict-title">发现内容冲突</h3>
             ${diffHtml}
  <div style="display:flex;justify-content:space-between;margin-top:20px;">
     <button onclick="this.parentElement.parentElement.resolution('keep')" 
-        style="background:#ba5757;color:white;border:none;padding:6px 15px;border-radius:5px;">
+        class="conflict-btn";border:none;padding:6px 15px;border-radius:5px;">
         保留当前版本
     </button>
     <button onclick="this.parentElement.parentElement.resolution('import')" 
@@ -2179,7 +2526,7 @@ function generateDiffHtml(current, imported) {
   });
 
   if (diffFields.length === 0) {
-      return `<div style="color:#ba5757;">ID相同但未检测到内容差异</div>`;
+      return `<div style="color:rgb(var(--theme-foreground));">ID相同但未检测到内容差异</div>`;
   }
 
   const diffSections = diffFields.map(field => {
@@ -2212,7 +2559,7 @@ function generateDiffHtml(current, imported) {
         margin: 10px 0; 
     }
     .diff-header { 
-        color: #ba5757; 
+        color: rgb(var(--theme-foreground));
         margin-bottom: 5px; 
         font-size: 14px;
     }
@@ -2232,11 +2579,11 @@ function generateDiffHtml(current, imported) {
         margin-bottom: 15px;
     }
     .diff-title {
-        color: #f7ebeb;
+        color: rgb(var(--theme-highlight));
         font-size: 13px;
         margin-bottom: 5px;
         padding-bottom: 3px;
-        border-bottom: 1px solid #ba5757;
+        border-bottom: 1px solid rgb(var(--theme-foreground));
     }
 </style>
 
@@ -2274,7 +2621,314 @@ if ('serviceWorker' in navigator) {
       console.log('PWA 可安装');
     });
     
+    // 主题管理相关变量
+let themes = JSON.parse(localStorage.getItem('themes') || '{}');
+let currentThemeName = 'default';
+
+// 显示主题设置模态框
+function showThemeSettings() {
+    const themeManager = document.getElementById('themeManager');
+    const themeSelect = document.getElementById('themeSelect');
     
+    // 填充主题选择下拉框
+    themeSelect.innerHTML = '<option value="">选择已有主题</option>';
+    Object.keys(themes).forEach(themeName => {
+        const option = document.createElement('option');
+        option.value = themeName;
+        option.textContent = themeName;
+        themeSelect.appendChild(option);
+    });
+
+    // 初始化设置
+    updateThemeSettingsUI();
+    themeManager.style.display = 'block';
+
+    // 绑定事件
+    document.getElementById('backgroundType').addEventListener('change', toggleBackgroundSettings);
+    document.getElementById('enableRain').addEventListener('change', toggleRainSettings);
+    document.getElementById('backgroundMedia').addEventListener('input', toggleBackgroundSettings);
+    document.getElementById('glassOpacity').addEventListener('input', () => {
+        document.getElementById('glassOpacityValue').textContent = document.getElementById('glassOpacity').value;
+    });
+    document.getElementById('glassBlur').addEventListener('input', () => {
+        document.getElementById('glassBlurValue').textContent = document.getElementById('glassBlur').value;
+    });
+    document.getElementById('videoSpeed').addEventListener('input', () => {
+        document.getElementById('videoSpeedValue').textContent = document.getElementById('videoSpeed').value;
+    });
+    document.getElementById('rainCount').addEventListener('input', () => {
+        document.getElementById('rainCountValue').textContent = document.getElementById('rainCount').value;
+    });
+    document.getElementById('rainSpeed').addEventListener('input', () => {
+        document.getElementById('rainSpeedValue').textContent = document.getElementById('rainSpeed').value;
+    });
+}
+
+// 更新主题设置UI
+function updateThemeSettingsUI() {
+    const theme = themes[currentThemeName] || {
+        backgroundType: 'solid',
+        solidBackgroundColor: '#1d1d5c',
+        backgroundMedia: '',
+        glassOpacity: 0.6,
+        glassBlur: 7,
+        videoSpeed: 1,
+        enableRain: false,
+        rainCount: 100,
+        rainSpeed: 2,
+        themeBackground: '#1d1d5c',
+        themeForeground: '#ba5757',
+        themeSecondary: '#a8a8e4',
+        themeHighlight: '#f7ebeb'
+    };
+
+    document.getElementById('themeName').value = currentThemeName;
+    document.getElementById('backgroundType').value = theme.backgroundType;
+    document.getElementById('solidBackgroundColor').value = theme.solidBackgroundColor;
+    document.getElementById('backgroundMedia').value = theme.backgroundMedia;
+    document.getElementById('glassOpacity').value = theme.glassOpacity;
+    document.getElementById('glassBlur').value = theme.glassBlur;
+    document.getElementById('videoSpeed').value = theme.videoSpeed;
+    document.getElementById('enableRain').checked = theme.enableRain;
+    document.getElementById('rainCount').value = theme.rainCount;
+    document.getElementById('rainSpeed').value = theme.rainSpeed;
+    document.getElementById('glassOpacityValue').textContent = theme.glassOpacity;
+    document.getElementById('glassBlurValue').textContent = theme.glassBlur;
+    document.getElementById('videoSpeedValue').textContent = theme.videoSpeed;
+    document.getElementById('rainCountValue').textContent = theme.rainCount;
+    document.getElementById('rainSpeedValue').textContent = theme.rainSpeed;
+    document.getElementById('themeBackground').value = theme.themeBackground;
+    document.getElementById('themeForeground').value = theme.themeForeground;
+    document.getElementById('themeSecondary').value = theme.themeSecondary;
+    document.getElementById('themeHighlight').value = theme.themeHighlight;
+
+    toggleBackgroundSettings();
+    toggleRainSettings();
+    applyTheme();
+}
+
+// 切换背景类型设置显示
+function toggleBackgroundSettings() {
+    const backgroundType = document.getElementById('backgroundType').value;
+    document.getElementById('solidColorSettings').style.display = backgroundType === 'solid' ? 'block' : 'none';
+    document.getElementById('glassSettings').style.display = backgroundType === 'glass' ? 'block' : 'none';
+    document.getElementById('videoSpeedSettings').style.display = backgroundType === 'glass' && isVideoUrl(document.getElementById('backgroundMedia').value) ? 'block' : 'none';
+}
+
+// 切换雨滴设置显示
+function toggleRainSettings() {
+    const enableRain = document.getElementById('enableRain').checked;
+    document.getElementById('rainSettings').style.display = enableRain ? 'block' : 'none';
+}
+
+// 判断是否为视频URL
+function isVideoUrl(url) {
+    return url.match(/\.(mp4|webm|ogg)$/i);
+}
+
+// 创建雨滴效果
+function createRain(count, speed) {
+    const rainContainer = document.querySelector('.rain-container');
+    rainContainer.innerHTML = ''; // 清空现有雨滴
+    for (let i = 0; i < count; i++) {
+        const rain = document.createElement('div');
+        rain.classList.add('rain');
+        rain.style.left = `${Math.random() * 100}vw`;
+        rain.style.animationDuration = `${Math.random() * (speed * 0.5) + (speed * 0.5)}s`;
+        rain.style.animationDelay = `${Math.random() * 5}s`;
+        rainContainer.appendChild(rain);
+    }
+}
+
+// 保存主题
+function saveTheme() {
+    const themeName = document.getElementById('themeName').value.trim();
+    if (!themeName) {
+        alert('请输入主题名称');
+        return;
+    }
+
+    const theme = {
+        backgroundType: document.getElementById('backgroundType').value,
+        solidBackgroundColor: document.getElementById('solidBackgroundColor').value,
+        backgroundMedia: document.getElementById('backgroundMedia').value,
+        glassOpacity: parseFloat(document.getElementById('glassOpacity').value),
+        glassBlur: parseInt(document.getElementById('glassBlur').value),
+        videoSpeed: parseFloat(document.getElementById('videoSpeed').value),
+        enableRain: document.getElementById('enableRain').checked,
+        rainCount: parseInt(document.getElementById('rainCount').value),
+        rainSpeed: parseFloat(document.getElementById('rainSpeed').value),
+        themeBackground: document.getElementById('themeBackground').value,
+        themeForeground: document.getElementById('themeForeground').value,
+        themeSecondary: document.getElementById('themeSecondary').value,
+        themeHighlight: document.getElementById('themeHighlight').value
+    };
+
+    themes[themeName] = theme;
+    localStorage.setItem('themes', JSON.stringify(themes));
+    currentThemeName = themeName;
+
+    // 更新主题选择下拉框
+    const themeSelect = document.getElementById('themeSelect');
+    if (!themeSelect.querySelector(`option[value="${themeName}"]`)) {
+        const option = document.createElement('option');
+        option.value = themeName;
+        option.textContent = themeName;
+        themeSelect.appendChild(option);
+    }
+    themeSelect.value = themeName;
+
+    alert('主题保存成功');
+}
+
+// 应用主题
+function applyTheme(themeName = currentThemeName) {
+    const theme = themes[themeName] || themes['default'] || {
+        backgroundType: 'solid',
+        solidBackgroundColor: '#1d1d5c',
+        backgroundMedia: '',
+        glassOpacity: 0.6,
+        glassBlur: 7,
+        videoSpeed: 1,
+        enableRain: false,
+        rainCount: 100,
+        rainSpeed: 2,
+        themeBackground: '#1d1d5c',
+        themeForeground: '#ba5757',
+        themeSecondary: '#a8a8e4',
+        themeHighlight: '#f7ebeb'
+    };
+
+    // 更新CSS变量
+    const root = document.documentElement;
+    const bgColor = hexToRgb(theme.themeBackground);
+    const fgColor = hexToRgb(theme.themeForeground);
+    const secColor = hexToRgb(theme.themeSecondary);
+    const hiColor = hexToRgb(theme.themeHighlight);
+
+    root.style.setProperty('--theme-background', `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`);
+    root.style.setProperty('--theme-foreground', `${fgColor.r}, ${fgColor.g}, ${fgColor.b}`);
+    root.style.setProperty('--theme-secondary', `${secColor.r}, ${secColor.g}, ${secColor.b}`);
+    root.style.setProperty('--theme-highlight', `${hiColor.r}, ${hiColor.g}, ${hiColor.b}`);
+
+    // 移除现有背景
+    let bgContainer = document.querySelector('.background-media-container');
+    if (bgContainer) bgContainer.remove();
+    root.classList.remove('glass-background');
+    document.querySelector('.rain-container').innerHTML = '';
+
+    // 设置背景
+    if (theme.backgroundType === 'solid') {
+        document.body.style.background = theme.solidBackgroundColor;
+        document.body.style.backgroundImage = 'none';
+    } else {
+        root.classList.add('glass-background');
+        root.style.setProperty('--glass-opacity', theme.glassOpacity);
+        root.style.setProperty('--glass-blur', `${theme.glassBlur}px`);
+
+        if (theme.backgroundMedia) {
+            bgContainer = document.createElement('div');
+            bgContainer.className = 'background-media-container';
+            document.body.appendChild(bgContainer);
+
+            if (isVideoUrl(theme.backgroundMedia)) {
+                const video = document.createElement('video');
+                video.src = theme.backgroundMedia;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playbackRate = theme.videoSpeed;
+                bgContainer.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = theme.backgroundMedia;
+                bgContainer.appendChild(img);
+            }
+        }
+
+        // 应用雨滴效果
+        if (theme.enableRain) {
+            createRain(theme.rainCount, theme.rainSpeed);
+        }
+    }
+
+    currentThemeName = themeName;
+}
+
+// HEX转RGB
+function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return { r, g, b };
+}
+
+// 导出主题
+function exportThemes() {
+    const blob = new Blob([JSON.stringify(themes)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `themes_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// 导入主题
+function importThemes(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedThemes = JSON.parse(e.target.result);
+            Object.keys(importedThemes).forEach(name => {
+                themes[name] = importedThemes[name];
+            });
+            localStorage.setItem('themes', JSON.stringify(themes));
+            alert('主题导入成功');
+            showThemeSettings();
+        } catch (err) {
+            alert('导入失败：' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
+}
+
+// 主题选择切换
+document.getElementById('themeSelect').addEventListener('change', function() {
+    const themeName = this.value;
+    if (themeName) {
+        currentThemeName = themeName;
+        updateThemeSettingsUI();
+        applyTheme(themeName);
+    }
+});
+
+// 初始化默认主题
+document.addEventListener('DOMContentLoaded', () => {
+    if (!themes['default']) {
+        themes['default'] = {
+            backgroundType: 'solid',
+            solidBackgroundColor: '#1d1d5c',
+            backgroundMedia: '',
+            glassOpacity: 0.6,
+            glassBlur: 7,
+            videoSpeed: 1,
+            enableRain: false,
+            rainCount: 100,
+            rainSpeed: 2,
+            themeBackground: '#1d1d5c',
+            themeForeground: '#ba5757',
+            themeSecondary: '#a8a8e4',
+            themeHighlight: '#f7ebeb'
+        };
+        localStorage.setItem('themes', JSON.stringify(themes));
+    }
+    applyTheme('default');
+});
 </script>
 </body>
 </html>  
