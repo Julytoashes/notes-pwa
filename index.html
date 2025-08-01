@@ -2871,15 +2871,15 @@ function hexToRgb(hex) {
 
 function updateManifest() {
     const theme = themes[currentThemeName] || themes['default'];
-    const bgColor = hexToRgb(theme.themeBackground); // 使用 themeBackground
+    const bgColor = hexToRgb(theme.themeBackground);
     const manifest = {
         name: "赛博日记本",
         short_name: "Brood",
         start_url: "/notes-pwa/index.html",
         scope: "/notes-pwa/",
         display: "standalone",
-        background_color: `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`, // 跟随 --theme-background
-        theme_color: `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`, // 跟随 --theme-background
+        background_color: `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`,
+        theme_color: `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`,
         icons: [
             {
                 src: "/notes-pwa/images/placeholder.png",
@@ -2891,10 +2891,30 @@ function updateManifest() {
     };
 
     const manifestLink = document.querySelector('link[rel="manifest"]');
+    if (manifestLink.dataset.blobUrl) {
+        URL.revokeObjectURL(manifestLink.dataset.blobUrl);
+    }
     const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob) + `#t=${Date.now()}`; // 添加时间戳避免缓存
+    manifestLink.dataset.blobUrl = url;
     manifestLink.setAttribute('href', url);
+
+    // 强制 Service Worker 更新
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(reg => reg.update());
+        });
+    }
 }
+
+// 在页面加载时初始化 manifest
+document.addEventListener('DOMContentLoaded', () => {
+    updateManifest();
+    initAudioPlayer();
+});
+
+
+
 
 // 导出主题
 function exportThemes() {
