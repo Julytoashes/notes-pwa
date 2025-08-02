@@ -267,6 +267,20 @@
     box-sizing: border-box !important;
 }
 
+.post-iframe {
+    width: 100% !important;
+    transform: none !important;
+    display: block !important;
+    margin: 0.3em 0 !important;
+}
+
+.post iframe {
+    width: 100% !important;
+    transform: none !important;
+    display: block !important;
+    box-sizing: border-box !important;
+}
+
 
 .post-actions button {
     background-color: rgb(var(--theme-background)) !important;
@@ -853,9 +867,9 @@ blockquote hr.blockquote-divider {
     --glass-background: 28, 45, 34; /* #1c2d22，毛玻璃默认颜色 */
     --glass-opacity: 0.6; /* 默认透明度 */
     --glass-blur: 7px; /* 默认模糊度 */
-    --post-letter-spacing: 0.3px; /* 字距 */
+    --post-letter-spacing: 0; /* 字距 */
     --post-line-height: 1.7; /* 行距 */
-    --post-font-size: 16px; /* 字体大小 */
+    --post-font-size: 12px; /* 字体大小 */
     --post-text-scale-x: 1; /* 文本水平缩放比例 */
     --post-container-width-scale: 1; /* 新增：容器宽度缩放比例 */
 }
@@ -1014,11 +1028,11 @@ blockquote {
 <div style="margin-bottom:15px;">
  <label style="color:rgb(var(--theme-highlight));">帖子正文字体设置（不含引用）：</label>
  <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
- <div>
- <label style="color:rgb(var(--theme-highlight));">字距（px，0-2）：</label>
- <input type="range" id="postLetterSpacing" min="0" max="2" step="0.1" value="0.3" style="width:100%;">
- <span id="postLetterSpacingValue" style="color:rgb(var(--theme-highlight));">0.3</span>
- </div>
+<div>
+    <label style="color:rgb(var(--theme-highlight));">字距（px，-2-2）：</label>
+    <input type="range" id="postLetterSpacing" min="-2" max="2" step="0.1" value="0" style="width:100%;">
+    <span id="postLetterSpacingValue" style="color:rgb(var(--theme-highlight));">0</span>
+</div>
  <div>
  <label style="color:rgb(var(--theme-highlight));">行距（1-2.5）：</label>
  <input type="range" id="postLineHeight" min="1" max="2.5" step="0.1" value="1.7" style="width:100%;">
@@ -1030,8 +1044,8 @@ blockquote {
  <span id="postTextScaleXValue" style="color:rgb(var(--theme-highlight));">1</span>
  </div>
  <div>
- <label style="color:rgb(var(--theme-highlight));">字体大小（px，12-24）：</label>
- <input type="range" id="postFontSize" min="12" max="24" step="1" value="16" style="width:100%;">
+ <label style="color:rgb(var(--theme-highlight));">字体大小（px，8-20）：</label>
+ <input type="range" id="postFontSize" min="8" max="20" step="1" value="12" style="width:100%;">
  <span id="postFontSizeValue" style="color:rgb(var(--theme-highlight));">16</span>
  </div>
  </div>
@@ -1354,46 +1368,65 @@ function createPostElement(post, mediaStates) {
     postElement.appendChild(actions);
 
     if (post.content) {
-        // 分离正文和引用内容
-        const contentParts = post.content.split(/(^>.*(?:\n>.*)*)/gm).filter(part => part.trim());
-        contentParts.forEach(part => {
-            if (part.startsWith('>')) {
-                // 处理引用内容
-                const blockquote = document.createElement('blockquote');
-                let processedContent = part
-                    .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
-                    .replace(/^>\s*/gm, '')
-                    .replace(/\n/g, '<br>');
-                // 应用 Markdown 格式化
-                processedContent = processedContent
-                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                    .replace(/__([^_]+)__/g, '<strong>$1</strong>')
-                    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                    .replace(/_([^_]+)_/g, '<em>$1</em>')
-                    .replace(/~([^~]+)~/g, '<del>$1</del>');
-                blockquote.innerHTML = processedContent;
-                postElement.appendChild(blockquote);
-            } else {
-                // 处理正文内容
-                const contentDiv = document.createElement('pre');
-                contentDiv.className = 'post-content';
-                contentDiv.style.whiteSpace = 'pre-wrap';
-                contentDiv.style.wordWrap = 'break-word';
-                contentDiv.style.margin = '0';
-                contentDiv.style.fontFamily = 'inherit';
-                contentDiv.innerHTML = part
-                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                    .replace(/__([^_]+)__/g, '<strong>$1</strong>')
-                    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                    .replace(/_([^_]+)_/g, '<em>$1</em>')
-                    .replace(/~([^~]+)~/g, '<del>$1</del>');
-                postElement.appendChild(contentDiv);
-            }
-        });
+        try {
+            // 使用临时容器解析 HTML，分离 iframe 和其他内容
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = post.content
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                .replace(/_([^_]+)_/g, '<em>$1</em>')
+                .replace(/~([^~]+)~/g, '<del>$1</del>')
+                .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
+                .replace(/^>\s*(.*)$/gm, '<blockquote>$1</blockquote>');
+
+            // 处理临时容器的子节点
+            Array.from(tempContainer.childNodes).forEach(node => {
+                if (node.nodeName === 'BLOCKQUOTE') {
+                    // 处理引用
+                    const blockquote = document.createElement('blockquote');
+                    blockquote.innerHTML = node.innerHTML.replace(/\n/g, '<br>');
+                    postElement.appendChild(blockquote);
+                } else if (node.nodeName === 'IFRAME') {
+                    // 处理 iframe
+                    const iframeContainer = document.createElement('div');
+                    iframeContainer.className = 'post-iframe';
+                    iframeContainer.appendChild(node.cloneNode(true));
+                    postElement.appendChild(iframeContainer);
+                } else {
+                    // 处理正文（包括文本、strong、em、del 等）
+                    const contentDiv = document.createElement('pre');
+                    contentDiv.className = 'post-content';
+                    contentDiv.style.whiteSpace = 'pre-wrap';
+                    contentDiv.style.wordWrap = 'break-word';
+                    contentDiv.style.margin = '0';
+                    contentDiv.style.fontFamily = 'inherit';
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        contentDiv.textContent = node.textContent;
+                    } else {
+                        contentDiv.appendChild(node.cloneNode(true));
+                    }
+                    if (contentDiv.textContent.trim() || contentDiv.children.length) {
+                        postElement.appendChild(contentDiv);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('渲染帖子内容失败:', error, 'Content:', post.content);
+            // 回退：显示原始内容
+            const contentDiv = document.createElement('pre');
+            contentDiv.className = 'post-content';
+            contentDiv.style.whiteSpace = 'pre-wrap';
+            contentDiv.style.wordWrap = 'break-word';
+            contentDiv.style.margin = '0';
+            contentDiv.style.fontFamily = 'inherit';
+            contentDiv.textContent = post.content;
+            postElement.appendChild(contentDiv);
+        }
     }
 
 
- if (post.media.length) {
+ if (post.media && post.media.length) {
         const mediaContainer = document.createElement('div');
         mediaContainer.className = 'post-media';
 
@@ -2903,7 +2936,9 @@ function applyTheme(themeName = currentThemeName) {
         postLineHeight: 1.7,
         postTextScaleX: 1,
         postContainerWidthScale: 1,
-        postFontSize: 16
+        postFontSize: 16,
+        postFontUrl: '',
+        postFontName: 'CustomFont'
     };
 
     const root = document.documentElement;
@@ -2925,8 +2960,44 @@ function applyTheme(themeName = currentThemeName) {
     root.style.setProperty('--post-container-width-scale', theme.postContainerWidthScale);
     root.style.setProperty('--post-font-size', `${theme.postFontSize}px`);
 
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    themeColorMeta.setAttribute('content', `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`);
+    // 动态加载字体
+    if (theme.postFontUrl && theme.postFontUrl.endsWith('.woff2')) {
+        const fontName = theme.postFontName || 'CustomFont';
+        const existingFontStyle = document.getElementById('dynamic-font');
+        if (existingFontStyle) existingFontStyle.remove();
+        const fontStyle = document.createElement('style');
+        fontStyle.id = 'dynamic-font';
+        fontStyle.textContent = `
+            @font-face {
+                font-family: "${fontName}";
+                src: url("${theme.postFontUrl}") format("woff2");
+                font-weight: normal;
+                font-style: normal;
+            }
+            .post-content {
+                font-family: "${fontName}", sans-serif !important;
+            }
+        `;
+        document.head.appendChild(fontStyle);
+        const fontTest = new FontFace(fontName, `url(${theme.postFontUrl})`, {
+            style: 'normal',
+            weight: 'normal'
+        });
+        fontTest.load().then(() => {
+            document.fonts.add(fontTest);
+        }).catch(error => {
+            console.warn(`字体加载失败: ${theme.postFontUrl}`, error);
+            document.querySelectorAll('.post-content').forEach(el => {
+                el.style.fontFamily = 'inherit';
+            });
+        });
+    } else {
+        document.querySelectorAll('.post-content').forEach(el => {
+            el.style.fontFamily = 'inherit';
+        });
+        const existingFontStyle = document.getElementById('dynamic-font');
+        if (existingFontStyle) existingFontStyle.remove();
+    }
 
     // 应用正文缩放
     document.querySelectorAll('.post-content').forEach(el => {
@@ -2936,6 +3007,13 @@ function applyTheme(themeName = currentThemeName) {
 
     // 重置 blockquote 样式
     document.querySelectorAll('.post blockquote').forEach(el => {
+        el.style.transform = 'none';
+        el.style.width = '100%';
+        el.style.fontFamily = 'Arial, sans-serif';
+    });
+
+    // 重置 iframe 和 post-iframe 样式
+    document.querySelectorAll('.post iframe, .post-iframe').forEach(el => {
         el.style.transform = 'none';
         el.style.width = '100%';
     });
@@ -3100,7 +3178,7 @@ themes['default'] = {
     postLineHeight: 1.7,
     postTextScaleX: 1, // 恢复
     postContainerWidthScale: 1, // 新增
-    postFontSize: 16
+    postFontSize: 12
 };
         localStorage.setItem('themes', JSON.stringify(themes));
     }
