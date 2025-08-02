@@ -250,15 +250,23 @@
     margin-top: 10px;
     display: none; /* 默认隐藏 */
 }
-.post pre {
-	position: relative; /* 新增定位 */
-    z-index: 3; /* 确保文字在遮罩上层 */
-    white-space: pre-wrap !important; /* 强制保留空白 */
+.post-content {
+    position: relative;
+    z-index: 3;
+    white-space: pre-wrap !important;
     word-break: break-word !important;
-    font-family: inherit !important; /* 保持字体一致 */
+    font-family: inherit !important;
     margin: 0 !important;
-    line-height: 1.5;
+    line-height: var(--post-line-height) !important;
+    letter-spacing: var(--post-letter-spacing) !important;
+    font-size: var(--post-font-size) !important;
+    transform: scaleX(var(--post-text-scale-x)) !important;
+    transform-origin: left !important;
+    width: calc(100% / var(--post-container-width-scale)) !important;
+    display: inline-block !important;
+    box-sizing: border-box !important;
 }
+
 
 .post-actions button {
     background-color: rgb(var(--theme-background)) !important;
@@ -601,21 +609,9 @@ input[type="range"]::-moz-range-track {
   height: 1px !important;
   background: rgba(var(--theme-foreground), 0.2); !important;
 }
-blockquote {
-    border-left: 1.5px solid rgb(var(--theme-background));
-    margin: 0.3em 0;  /* 简化上下边距的写法 */
-    padding: 4px 8px 4px 8px;  /* 移除右内边距，只保留左内边距 */
-    color: rgb(var(--theme-secondary));
-    background: rgba(var(--theme-background), 0.1);
-    font-size: 9px;
-    font-family: 'Arial, sans-serif';
-    font-weight: 400;
-    white-space: pre-wrap;
-    line-height: 1.6;
-    display: inline-block;
-    width: 100%;
-    box-sizing: border-box;
-}
+
+
+
 
 hr {
     border: 0;
@@ -857,6 +853,11 @@ blockquote hr.blockquote-divider {
     --glass-background: 28, 45, 34; /* #1c2d22，毛玻璃默认颜色 */
     --glass-opacity: 0.6; /* 默认透明度 */
     --glass-blur: 7px; /* 默认模糊度 */
+    --post-letter-spacing: 0.3px; /* 字距 */
+    --post-line-height: 1.7; /* 行距 */
+    --post-font-size: 16px; /* 字体大小 */
+    --post-text-scale-x: 1; /* 文本水平缩放比例 */
+    --post-container-width-scale: 1; /* 新增：容器宽度缩放比例 */
 }
 
 .search-box {
@@ -892,8 +893,24 @@ blockquote hr.blockquote-divider {
     gap: 10px; /* 按钮间距 */
 }
 
-
+blockquote {
+    border-left: 1.5px solid rgb(var(--theme-background));
+    margin: 0.3em 0;
+    padding: 4px 8px;
+    color: rgb(var(--theme-secondary));
+    background: rgba(var(--theme-background), 0.1);
+    font-size: 9px !important;
+    font-family: 'Arial, sans-serif' !important;
+    font-weight: 400 !important;
+    white-space: pre-wrap !important;
+    line-height: 1.6 !important;
+    display: block !important; /* 改为 block，确保独立布局 */
+    width: 100% !important; /* 固定宽度 */
+    box-sizing: border-box !important;
+    transform: none !important; /* 禁止任何缩放 */
+    transform-origin: left !important; /* 防止父级影响 */
 }
+
 
     </style>
 </head>
@@ -994,6 +1011,31 @@ blockquote hr.blockquote-divider {
                 </div>
             </div>
         </div>
+<div style="margin-bottom:15px;">
+ <label style="color:rgb(var(--theme-highlight));">帖子正文字体设置（不含引用）：</label>
+ <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+ <div>
+ <label style="color:rgb(var(--theme-highlight));">字距（px，0-2）：</label>
+ <input type="range" id="postLetterSpacing" min="0" max="2" step="0.1" value="0.3" style="width:100%;">
+ <span id="postLetterSpacingValue" style="color:rgb(var(--theme-highlight));">0.3</span>
+ </div>
+ <div>
+ <label style="color:rgb(var(--theme-highlight));">行距（1-2.5）：</label>
+ <input type="range" id="postLineHeight" min="1" max="2.5" step="0.1" value="1.7" style="width:100%;">
+ <span id="postLineHeightValue" style="color:rgb(var(--theme-highlight));">1.7</span>
+ </div>
+ <div>
+ <label style="color:rgb(var(--theme-highlight));">文本水平缩放（0.5-1.5）：</label>
+ <input type="range" id="postTextScaleX" min="0.5" max="1.5" step="0.01" value="1" style="width:100%;">
+ <span id="postTextScaleXValue" style="color:rgb(var(--theme-highlight));">1</span>
+ </div>
+ <div>
+ <label style="color:rgb(var(--theme-highlight));">字体大小（px，12-24）：</label>
+ <input type="range" id="postFontSize" min="12" max="24" step="1" value="16" style="width:100%;">
+ <span id="postFontSizeValue" style="color:rgb(var(--theme-highlight));">16</span>
+ </div>
+ </div>
+</div>
         <div style="margin-bottom:15px;">
             <label style="color:rgb(var(--theme-highlight));">保存的主题方案：</label>
             <select id="themeSelect" style="padding:5px; border:none; background:rgba(0,0,0,0.1); color:rgb(var(--theme-highlight)); width:100%; border-radius:3px;">
@@ -1300,38 +1342,56 @@ function createPostElement(post, mediaStates) {
     postElement.dataset.id = post.id;
 
     const actions = document.createElement('div');
-actions.className = 'post-actions';
-const isPinned = JSON.parse(localStorage.getItem('pinnedPosts') || '[]').includes(post.id);
-actions.innerHTML = `
-    ${isPinned ? 
-        `<button onclick="moveDownPinnedPost('${post.id}')" title="下移">↓</button>` : 
-        `<button onclick="if(confirm('确定要删除此帖子吗？')) deletePost('${post.id}')" title="删除">×</button>`}
-    <button onclick="editPost('${post.id}')" title="编辑">✎</button>
-    <button onclick="togglePinPost('${post.id}')" title="${isPinned ? '取消置顶' : '置顶'}">P</button>
-`;
+    actions.className = 'post-actions';
+    const isPinned = JSON.parse(localStorage.getItem('pinnedPosts') || '[]').includes(post.id);
+    actions.innerHTML = `
+        ${isPinned ? 
+            `<button onclick="moveDownPinnedPost('${post.id}')" title="下移">↓</button>` : 
+            `<button onclick="if(confirm('确定要删除此帖子吗？')) deletePost('${post.id}')" title="删除">×</button>`}
+        <button onclick="editPost('${post.id}')" title="编辑">✎</button>
+        <button onclick="togglePinPost('${post.id}')" title="${isPinned ? '取消置顶' : '置顶'}">P</button>
+    `;
     postElement.appendChild(actions);
 
     if (post.content) {
-        const contentDiv = document.createElement('pre');
-        contentDiv.style.whiteSpace = 'pre-wrap';
-        contentDiv.style.wordWrap = 'break-word';
-        contentDiv.style.margin = '0';
-        contentDiv.style.fontFamily = 'inherit';
-        contentDiv.innerHTML = post.content
-            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/__([^_]+)__/g, '<strong>$1</strong>')
-            .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-            .replace(/_([^_]+)_/g, '<em>$1</em>')
-            .replace(/~([^~]+)~/g, '<del>$1</del>')
-            .replace(/(^>.*(\n>.*)*)/gm, (match) => {
-                const processedContent = match
+        // 分离正文和引用内容
+        const contentParts = post.content.split(/(^>.*(?:\n>.*)*)/gm).filter(part => part.trim());
+        contentParts.forEach(part => {
+            if (part.startsWith('>')) {
+                // 处理引用内容
+                const blockquote = document.createElement('blockquote');
+                let processedContent = part
                     .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
                     .replace(/^>\s*/gm, '')
                     .replace(/\n/g, '<br>');
-                return `<blockquote>${processedContent}</blockquote>`;
-            });
-        postElement.appendChild(contentDiv);
+                // 应用 Markdown 格式化
+                processedContent = processedContent
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                    .replace(/_([^_]+)_/g, '<em>$1</em>')
+                    .replace(/~([^~]+)~/g, '<del>$1</del>');
+                blockquote.innerHTML = processedContent;
+                postElement.appendChild(blockquote);
+            } else {
+                // 处理正文内容
+                const contentDiv = document.createElement('pre');
+                contentDiv.className = 'post-content';
+                contentDiv.style.whiteSpace = 'pre-wrap';
+                contentDiv.style.wordWrap = 'break-word';
+                contentDiv.style.margin = '0';
+                contentDiv.style.fontFamily = 'inherit';
+                contentDiv.innerHTML = part
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                    .replace(/_([^_]+)_/g, '<em>$1</em>')
+                    .replace(/~([^~]+)~/g, '<del>$1</del>');
+                postElement.appendChild(contentDiv);
+            }
+        });
     }
+
 
  if (post.media.length) {
         const mediaContainer = document.createElement('div');
@@ -2630,7 +2690,6 @@ function showThemeSettings() {
     const themeManager = document.getElementById('themeManager');
     const themeSelect = document.getElementById('themeSelect');
     
-    // 填充主题选择下拉框
     themeSelect.innerHTML = '<option value="">选择已有主题</option>';
     Object.keys(themes).forEach(themeName => {
         const option = document.createElement('option');
@@ -2639,11 +2698,9 @@ function showThemeSettings() {
         themeSelect.appendChild(option);
     });
 
-    // 初始化设置
     updateThemeSettingsUI();
     themeManager.style.display = 'block';
 
-    // 绑定事件
     document.getElementById('backgroundType').addEventListener('change', toggleBackgroundSettings);
     document.getElementById('enableRain').addEventListener('change', toggleRainSettings);
     document.getElementById('backgroundMedia').addEventListener('input', toggleBackgroundSettings);
@@ -2662,6 +2719,34 @@ function showThemeSettings() {
     document.getElementById('rainSpeed').addEventListener('input', () => {
         document.getElementById('rainSpeedValue').textContent = document.getElementById('rainSpeed').value;
     });
+    document.getElementById('postLetterSpacing').addEventListener('input', () => {
+        document.getElementById('postLetterSpacingValue').textContent = document.getElementById('postLetterSpacing').value;
+    });
+    document.getElementById('postLineHeight').addEventListener('input', () => {
+        document.getElementById('postLineHeightValue').textContent = document.getElementById('postLineHeight').value;
+    });
+    document.getElementById('postTextScaleX').addEventListener('input', () => {
+        document.getElementById('postTextScaleXValue').textContent = document.getElementById('postTextScaleX').value;
+    });
+    document.getElementById('postFontSize').addEventListener('input', () => {
+        document.getElementById('postFontSizeValue').textContent = document.getElementById('postFontSize').value;
+    });
+
+    // 实时更新字体设置
+    ['postLetterSpacing', 'postLineHeight', 'postTextScaleX', 'postFontSize'].forEach(id => {
+        const element = document.getElementById(id);
+        const newElement = element.cloneNode(true);
+        element.parentNode.replaceChild(newElement, element);
+        newElement.addEventListener('input', () => {
+            const theme = themes[currentThemeName] || themes['default'];
+            theme.postLetterSpacing = parseFloat(document.getElementById('postLetterSpacing').value);
+            theme.postLineHeight = parseFloat(document.getElementById('postLineHeight').value);
+            theme.postTextScaleX = parseFloat(document.getElementById('postTextScaleX').value);
+            theme.postContainerWidthScale = parseFloat(document.getElementById('postTextScaleX').value); // 同步
+            theme.postFontSize = parseInt(document.getElementById('postFontSize').value);
+            applyTheme();
+        });
+    });
 }
 
 // 更新主题设置UI
@@ -2679,7 +2764,12 @@ function updateThemeSettingsUI() {
         themeBackground: '#1d1d5c',
         themeForeground: '#ba5757',
         themeSecondary: '#a8a8e4',
-        themeHighlight: '#f7ebeb'
+        themeHighlight: '#f7ebeb',
+        postLetterSpacing: 0.3,
+        postLineHeight: 1.7,
+        postTextScaleX: 1,
+        postContainerWidthScale: 1, // 新增
+        postFontSize: 16
     };
 
     document.getElementById('themeName').value = currentThemeName;
@@ -2688,19 +2778,27 @@ function updateThemeSettingsUI() {
     document.getElementById('backgroundMedia').value = theme.backgroundMedia;
     document.getElementById('glassOpacity').value = theme.glassOpacity;
     document.getElementById('glassBlur').value = theme.glassBlur;
-    document.getElementById('videoSpeed').value = theme.videoSpeed;
-    document.getElementById('enableRain').checked = theme.enableRain;
-    document.getElementById('rainCount').value = theme.rainCount;
-    document.getElementById('rainSpeed').value = theme.rainSpeed;
     document.getElementById('glassOpacityValue').textContent = theme.glassOpacity;
     document.getElementById('glassBlurValue').textContent = theme.glassBlur;
+    document.getElementById('videoSpeed').value = theme.videoSpeed;
     document.getElementById('videoSpeedValue').textContent = theme.videoSpeed;
+    document.getElementById('enableRain').checked = theme.enableRain;
+    document.getElementById('rainCount').value = theme.rainCount;
     document.getElementById('rainCountValue').textContent = theme.rainCount;
+    document.getElementById('rainSpeed').value = theme.rainSpeed;
     document.getElementById('rainSpeedValue').textContent = theme.rainSpeed;
     document.getElementById('themeBackground').value = theme.themeBackground;
     document.getElementById('themeForeground').value = theme.themeForeground;
     document.getElementById('themeSecondary').value = theme.themeSecondary;
     document.getElementById('themeHighlight').value = theme.themeHighlight;
+    document.getElementById('postLetterSpacing').value = theme.postLetterSpacing;
+    document.getElementById('postLetterSpacingValue').textContent = theme.postLetterSpacing;
+    document.getElementById('postLineHeight').value = theme.postLineHeight;
+    document.getElementById('postLineHeightValue').textContent = theme.postLineHeight;
+    document.getElementById('postTextScaleX').value = theme.postTextScaleX;
+    document.getElementById('postTextScaleXValue').textContent = theme.postTextScaleX;
+    document.getElementById('postFontSize').value = theme.postFontSize;
+    document.getElementById('postFontSizeValue').textContent = theme.postFontSize;
 
     toggleBackgroundSettings();
     toggleRainSettings();
@@ -2761,14 +2859,18 @@ function saveTheme() {
         themeBackground: document.getElementById('themeBackground').value,
         themeForeground: document.getElementById('themeForeground').value,
         themeSecondary: document.getElementById('themeSecondary').value,
-        themeHighlight: document.getElementById('themeHighlight').value
+        themeHighlight: document.getElementById('themeHighlight').value,
+        postLetterSpacing: parseFloat(document.getElementById('postLetterSpacing').value),
+        postLineHeight: parseFloat(document.getElementById('postLineHeight').value),
+        postTextScaleX: parseFloat(document.getElementById('postTextScaleX').value),
+        postContainerWidthScale: parseFloat(document.getElementById('postTextScaleX').value), // 同步
+        postFontSize: parseInt(document.getElementById('postFontSize').value)
     };
 
     themes[themeName] = theme;
     localStorage.setItem('themes', JSON.stringify(themes));
     currentThemeName = themeName;
 
-    // 更新主题选择下拉框
     const themeSelect = document.getElementById('themeSelect');
     if (!themeSelect.querySelector(`option[value="${themeName}"]`)) {
         const option = document.createElement('option');
@@ -2796,7 +2898,12 @@ function applyTheme(themeName = currentThemeName) {
         themeBackground: '#1d1d5c',
         themeForeground: '#ba5757',
         themeSecondary: '#a8a8e4',
-        themeHighlight: '#f7ebeb'
+        themeHighlight: '#f7ebeb',
+        postLetterSpacing: 0.3,
+        postLineHeight: 1.7,
+        postTextScaleX: 1,
+        postContainerWidthScale: 1,
+        postFontSize: 16
     };
 
     const root = document.documentElement;
@@ -2805,29 +2912,41 @@ function applyTheme(themeName = currentThemeName) {
     const secColor = hexToRgb(theme.themeSecondary);
     const hiColor = hexToRgb(theme.themeHighlight);
 
-    // 设置 CSS 变量
     root.style.setProperty('--theme-background', `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`);
     root.style.setProperty('--theme-foreground', `${fgColor.r}, ${fgColor.g}, ${fgColor.b}`);
     root.style.setProperty('--theme-secondary', `${secColor.r}, ${secColor.g}, ${secColor.b}`);
     root.style.setProperty('--theme-highlight', `${hiColor.r}, ${hiColor.g}, ${hiColor.b}`);
-    root.style.setProperty('--glass-background', `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`); // glass-background 跟随 themeBackground
+    root.style.setProperty('--glass-background', `${bgColor.r}, ${bgColor.g}, ${bgColor.b}`);
     root.style.setProperty('--glass-opacity', theme.glassOpacity);
     root.style.setProperty('--glass-blur', `${theme.glassBlur}px`);
+    root.style.setProperty('--post-letter-spacing', `${theme.postLetterSpacing}px`);
+    root.style.setProperty('--post-line-height', theme.postLineHeight);
+    root.style.setProperty('--post-text-scale-x', theme.postTextScaleX);
+    root.style.setProperty('--post-container-width-scale', theme.postContainerWidthScale);
+    root.style.setProperty('--post-font-size', `${theme.postFontSize}px`);
 
-    // 更新 theme-color
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     themeColorMeta.setAttribute('content', `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`);
 
-    // 更新 manifest
+    // 应用正文缩放
+    document.querySelectorAll('.post-content').forEach(el => {
+        el.style.transform = `scaleX(${theme.postTextScaleX})`;
+        el.style.width = `calc(100% / ${theme.postContainerWidthScale})`;
+    });
+
+    // 重置 blockquote 样式
+    document.querySelectorAll('.post blockquote').forEach(el => {
+        el.style.transform = 'none';
+        el.style.width = '100%';
+    });
+
     updateManifest();
 
-    // 移除现有背景
     let bgContainer = document.querySelector('.background-media-container');
     if (bgContainer) bgContainer.remove();
     root.classList.remove('glass-background');
     document.querySelector('.rain-container').innerHTML = '';
 
-    // 设置背景
     if (theme.backgroundType === 'solid') {
         document.body.style.background = theme.solidBackgroundColor;
         document.body.style.backgroundImage = 'none';
@@ -2963,21 +3082,26 @@ document.getElementById('themeSelect').addEventListener('change', function() {
 // 初始化默认主题
 document.addEventListener('DOMContentLoaded', () => {
     if (!themes['default']) {
-        themes['default'] = {
-            backgroundType: 'solid',
-            solidBackgroundColor: '#1d1d5c',
-            backgroundMedia: '',
-            glassOpacity: 0.6,
-            glassBlur: 7,
-            videoSpeed: 1,
-            enableRain: false,
-            rainCount: 100,
-            rainSpeed: 2,
-            themeBackground: '#1d1d5c',
-            themeForeground: '#ba5757',
-            themeSecondary: '#a8a8e4',
-            themeHighlight: '#f7ebeb'
-        };
+themes['default'] = {
+    backgroundType: 'solid',
+    solidBackgroundColor: '#1d1d5c',
+    backgroundMedia: '',
+    glassOpacity: 0.6,
+    glassBlur: 7,
+    videoSpeed: 1,
+    enableRain: false,
+    rainCount: 100,
+    rainSpeed: 2,
+    themeBackground: '#1d1d5c',
+    themeForeground: '#ba5757',
+    themeSecondary: '#a8a8e4',
+    themeHighlight: '#f7ebeb',
+    postLetterSpacing: 0.3,
+    postLineHeight: 1.7,
+    postTextScaleX: 1, // 恢复
+    postContainerWidthScale: 1, // 新增
+    postFontSize: 16
+};
         localStorage.setItem('themes', JSON.stringify(themes));
     }
     applyTheme('default');
