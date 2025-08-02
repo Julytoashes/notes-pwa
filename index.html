@@ -1367,18 +1367,26 @@ function createPostElement(post, mediaStates) {
     `;
     postElement.appendChild(actions);
 
-    if (post.content) {
+        if (post.content) {
         try {
-            // 使用临时容器解析 HTML，分离 iframe 和其他内容
+            // 使用临时容器解析内容
             const tempContainer = document.createElement('div');
-            tempContainer.innerHTML = post.content
+            // 修改引用处理逻辑：合并连续引用行
+            let content = post.content
                 .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                 .replace(/__([^_]+)__/g, '<strong>$1</strong>')
                 .replace(/\*([^*]+)\*/g, '<em>$1</em>')
                 .replace(/_([^_]+)_/g, '<em>$1</em>')
                 .replace(/~([^~]+)~/g, '<del>$1</del>')
                 .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
-                .replace(/^>\s*(.*)$/gm, '<blockquote>$1</blockquote>');
+                // 合并连续引用行
+                .replace(/(^>\s*.+?(?:\n>\s*.+?)*)(?=\n[^>\n]|\n$|$)/gms, (match) => {
+                    // 将连续引用行合并为单个 blockquote
+                    const lines = match.split('\n').map(line => line.replace(/^>\s*/, '')).join('<br>');
+                    return `<blockquote>${lines}</blockquote>`;
+                });
+
+            tempContainer.innerHTML = content;
 
             // 处理临时容器的子节点
             Array.from(tempContainer.childNodes).forEach(node => {
