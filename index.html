@@ -439,19 +439,7 @@
     white-space: pre-wrap;
     word-wrap: break-word;
 }
-.youtube-container {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4/3;
-}
 
-.youtube-container iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
 
 
 
@@ -925,7 +913,40 @@ blockquote {
     transform-origin: left !important; /* 防止父级影响 */
 }
 
+.youtube-container, .okru-container {
+    position: relative;
+    width: 100% !important;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+}
 
+.youtube-container iframe, .okru-container iframe {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 133.33% !important; /* 保持 YouTube 和 OK.ru 的特定缩放 */
+    height: 100% !important;
+    transform: translate(-50%, 0) !important; /* 仅应用水平居中的 transform */
+    border: none;
+    box-sizing: border-box;
+}
+
+.bilibili-container {
+    position: relative;
+    width: 100% !important;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+}
+
+.bilibili-container iframe {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 133.33% !important;
+    height: 100% !important;
+    transform: translate(-50%, 0) !important;
+    border: none;
+}
     </style>
 </head>
 <body>
@@ -1256,40 +1277,60 @@ const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i
     const media = [];
     const tags = [];
     const contentLines = [];
+    let blockquoteLines = [];
+    let inBlockquote = false;
 
-    lines.forEach(originalLine => {
-        // 改为更精确的段落保留逻辑
-        const preservedLine = originalLine
-            .replace(/(#\w+)/g, 'SPLIT_MARKER$1SPLIT_MARKER') // 标记标签
-            .replace(/(https?:\/\/\S+)/gi, 'SPLIT_MARKER$1SPLIT_MARKER') // 标记链接
-            .split('SPLIT_MARKER');
+    lines.forEach((line, index) => {
+        const trimmedLine = line.trimStart(); // 仅去除行首空格，保留原始格式
 
-        let lineContent = '';
-        preservedLine.forEach(segment => {
-            if (!segment) return;
-            
-            // 检测媒体链接
-            const mediaType = detectMediaType(segment);
-            if (mediaType) {
-                media.push(mediaType);
-                return;
+        // 处理引用行
+        if (trimmedLine.startsWith('>')) {
+            if (!inBlockquote) {
+                inBlockquote = true;
             }
-
-            // 检测标签
-            if (segment.startsWith('#')) {
-                tags.push(segment.slice(1));
-                return;
+            // 去除 "> " 前缀，保留内容
+            const quoteContent = trimmedLine.replace(/^>\s*/, '');
+            if (quoteContent || blockquoteLines.length > 0) {
+                blockquoteLines.push(quoteContent);
             }
+            return;
+        }
 
-            // 保留原始内容（包含空格）
-            lineContent += segment;
-        });
-        
-        contentLines.push(lineContent); // 保留原始换行和空格
+        // 结束引用块
+        if (inBlockquote && !trimmedLine.startsWith('>')) {
+            inBlockquote = false;
+            if (blockquoteLines.length > 0) {
+                contentLines.push(`<blockquote>${blockquoteLines.join('<br>')}</blockquote>`);
+                blockquoteLines = [];
+            }
+        }
+
+        // 处理媒体链接
+        const mediaType = detectMediaType(trimmedLine);
+        if (mediaType) {
+            media.push(mediaType);
+            return;
+        }
+
+        // 处理标签
+        if (trimmedLine.startsWith('#')) {
+            tags.push(trimmedLine.slice(1).trim());
+            return;
+        }
+
+        // 处理正文（非引用、非媒体、非标签）
+        if (trimmedLine || index === 0) {
+            contentLines.push(trimmedLine);
+        }
     });
 
+    // 处理文件末尾的引用块
+    if (inBlockquote && blockquoteLines.length > 0) {
+        contentLines.push(`<blockquote>${blockquoteLines.join('<br>')}</blockquote>`);
+    }
+
     return {
-        content: contentLines.join('\n').replace(/\n+$/,''),
+        content: contentLines.join('\n').trim(), // 使用 \n 连接正文，保留必要换行
         media,
         tags
     };
@@ -1369,40 +1410,46 @@ function createPostElement(post, mediaStates) {
 
         if (post.content) {
         try {
-            // 使用临时容器解析内容
             const tempContainer = document.createElement('div');
-            // 修改引用处理逻辑：合并连续引用行
             let content = post.content
                 .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                 .replace(/__([^_]+)__/g, '<strong>$1</strong>')
                 .replace(/\*([^*]+)\*/g, '<em>$1</em>')
                 .replace(/_([^_]+)_/g, '<em>$1</em>')
                 .replace(/~([^~]+)~/g, '<del>$1</del>')
+                // 处理水平线
                 .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
-                // 合并连续引用行
-                .replace(/(^>\s*.+?(?:\n>\s*.+?)*)(?=\n[^>\n]|\n$|$)/gms, (match) => {
-                    // 将连续引用行合并为单个 blockquote
-                    const lines = match.split('\n').map(line => line.replace(/^>\s*/, '')).join('<br>');
-                    return `<blockquote>${lines}</blockquote>`;
-                });
+                // 处理引用块 - 保留内部换行
+                .replace(/(^>[^\n]*(?:\n>[^\n]*)*)/gm, (match) => {
+                    // 移除每行的 > 前缀
+                    const content = match.replace(/^>\s*/gm, '');
+                    // 将换行转换为 <br>
+                    return `<blockquote>${content.replace(/\n/g, '<br>')}</blockquote>`;
+                })
+                // 移除引用块后的多余换行
+                .replace(/<\/blockquote>\s*\n/g, '</blockquote>');
 
             tempContainer.innerHTML = content;
 
-            // 处理临时容器的子节点
+            let lastBlockquote = null;
             Array.from(tempContainer.childNodes).forEach(node => {
                 if (node.nodeName === 'BLOCKQUOTE') {
-                    // 处理引用
                     const blockquote = document.createElement('blockquote');
-                    blockquote.innerHTML = node.innerHTML.replace(/\n/g, '<br>');
+                    blockquote.innerHTML = node.innerHTML; // 保留 <br>
                     postElement.appendChild(blockquote);
+                    lastBlockquote = blockquote;
                 } else if (node.nodeName === 'IFRAME') {
-                    // 处理 iframe
                     const iframeContainer = document.createElement('div');
                     iframeContainer.className = 'post-iframe';
                     iframeContainer.appendChild(node.cloneNode(true));
                     postElement.appendChild(iframeContainer);
-                } else {
-                    // 处理正文（包括文本、strong、em、del 等）
+                    lastBlockquote = null;
+                } else if (node.nodeName === 'HR' && node.className === 'blockquote-divider') {
+                    const hr = document.createElement('hr');
+                    hr.className = 'blockquote-divider';
+                    postElement.appendChild(hr);
+                    lastBlockquote = null;
+                } else if (node.textContent.trim() || (node.nodeType !== Node.TEXT_NODE && node.children.length)) {
                     const contentDiv = document.createElement('pre');
                     contentDiv.className = 'post-content';
                     contentDiv.style.whiteSpace = 'pre-wrap';
@@ -1410,13 +1457,18 @@ function createPostElement(post, mediaStates) {
                     contentDiv.style.margin = '0';
                     contentDiv.style.fontFamily = 'inherit';
                     if (node.nodeType === Node.TEXT_NODE) {
-                        contentDiv.textContent = node.textContent;
+                        const text = node.textContent.trim();
+                        if (text) {
+                            contentDiv.innerHTML = text.replace(/\n/g, '<br>');
+                        }
                     } else {
                         contentDiv.appendChild(node.cloneNode(true));
                     }
-                    if (contentDiv.textContent.trim() || contentDiv.children.length) {
-                        postElement.appendChild(contentDiv);
+                    if (lastBlockquote) {
+                        contentDiv.style.marginTop = '-0.3em'; // 进一步确保无空行
                     }
+                    postElement.appendChild(contentDiv);
+                    lastBlockquote = null;
                 }
             });
         } catch (error) {
@@ -1447,6 +1499,7 @@ function createPostElement(post, mediaStates) {
     mediaContainer.style.lineHeight = '0'; // 添加这行，消除行高造成的空隙
 
     const container = document.createElement('div');
+    container.className = 'okru-container'; // 使用特定类
     container.style.position = 'relative';
     container.style.width = '100%';
     container.style.aspectRatio = '4/3';
@@ -1557,11 +1610,13 @@ function createPostElement(post, mediaStates) {
             
             iframe.src = `https://ok.ru/videoembed/${videoId}?autoplay=1`;
             iframe.style.position = 'absolute';
+            
             iframe.style.top = '0';
-            iframe.style.left = '0';
-            iframe.style.width = '133.33%';
-            iframe.style.height = '100%';
-            iframe.style.transform = 'translate(-50%, -50%)';
+    iframe.style.left = '50%';
+    iframe.style.width = '133.33%';
+    iframe.style.height = '100%';
+    iframe.style.transform = 'translate(-50%, 0)';
+            
             iframe.style.border = 'none';
             iframe.setAttribute('allowfullscreen', '');
             iframe.setAttribute('allow', 'autoplay');
@@ -1793,6 +1848,7 @@ if (imageCount > 1) {
                 
              if (media.type === 'bilibili') {
     const container = document.createElement('div');
+    container.className = 'bilibili-container'; // 添加特定类
     container.style.position = 'relative';
     container.style.width = '100%';
     container.style.aspectRatio = '4/3';
@@ -1803,10 +1859,10 @@ if (imageCount > 1) {
     iframe.dataset.mediaId = mediaId;
     iframe.style.position = 'absolute';
     iframe.style.top = '0';
-    iframe.style.left = '0';
+    iframe.style.left = '50%';
     iframe.style.width = '133.33%';
     iframe.style.height = '100%';
-    iframe.style.transform = 'translate(-50%, -50%)';
+    iframe.style.transform = 'translate(-50%, 0)';
     iframe.style.border = 'none';
     iframe.setAttribute('allowfullscreen', 'true');
     
@@ -1832,6 +1888,7 @@ if (imageCount > 1) {
               
 if (media.type === 'youtube') {
     const container = document.createElement('div');
+    container.className = 'youtube-container'; // 使用特定类
     container.style.position = 'relative';
     container.style.width = '100%';
     container.style.cursor = 'pointer';
@@ -1871,11 +1928,10 @@ if (media.type === 'youtube') {
     // 设置iframe样式
     iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
     iframe.style.position = 'absolute';
-    iframe.style.top = '0';
-    iframe.style.left = '0';
-    iframe.style.width = '133.33%'; // 4:3容器中显示16:9内容需要的宽度
-    iframe.style.height = '100%';
-    iframe.style.transform = 'translate(-50%, -50%)'; // 居中
+    
+    iframe.style.width = '133.33%'; // 宽度自适应视频比例
+    iframe.style.height = '100%'; // 高度匹配容器
+    
     iframe.style.border = 'none';
     iframe.setAttribute('allowfullscreen', '');
     iframe.setAttribute('allow', 'autoplay');
