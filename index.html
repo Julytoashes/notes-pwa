@@ -28,13 +28,6 @@
         .post pre, .post div {
     font-weight: 200;
 }
-.post pre, .post div {
-    margin: 0 !important; /* 确保正文容器无外边距 */
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: inherit;
-    line-height: 1.5;
-}
 /* 顶栏（标签过滤器） */
 .tag-filter {
     display: flex;
@@ -916,7 +909,7 @@ blockquote hr.blockquote-divider {
 
 blockquote {
     border-left: 1.5px solid rgb(var(--theme-background));
-    margin: 0.3em -0.3em !important; /* 移除底部间距 */
+    margin: 0.3em 0;
     padding: 4px 8px;
     color: rgb(var(--theme-secondary));
     background: rgba(var(--theme-background), 0.1);
@@ -925,15 +918,11 @@ blockquote {
     font-weight: 400 !important;
     white-space: pre-wrap !important;
     line-height: 1.6 !important;
-    display: block !important;
-    width: 100% !important;
+    display: block !important; /* 改为 block，确保独立布局 */
+    width: 100% !important; /* 固定宽度 */
     box-sizing: border-box !important;
-    transform: none !important;
-    transform-origin: left !important;
-}
-
-.post-content {
-    margin-top: 0 !important; /* 确保正文紧跟引用 */
+    transform: none !important; /* 禁止任何缩放 */
+    transform-origin: left !important; /* 防止父级影响 */
 }
 
 
@@ -1384,25 +1373,20 @@ function createPostElement(post, mediaStates) {
             const tempContainer = document.createElement('div');
             // 修改引用处理逻辑：合并连续引用行
             let content = post.content
-            // 处理粗体、斜体等标记
-            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/__([^_]+)__/g, '<strong>$1</strong>')
-            .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-            .replace(/_([^_]+)_/g, '<em>$1</em>')
-            .replace(/~([^~]+)~/g, '<del>$1</del>')
-            // 处理水平线
-            .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
-            // 处理引用块 - 关键修改部分
-            .replace(/(^>[^\n]*(?:\n>[^\n]*)*)/gm, (match) => {
-                // 移除每行的 > 前缀
-                const content = match.replace(/^>\s*/gm, '');
-                // 将换行转换为空格，避免pre-wrap产生空行
-                return `<blockquote>${content.replace(/\n/g, ' ')}</blockquote>`;
-            })
-            // 移除引用块后的多余换行
-            .replace(/<\/blockquote>\s*\n/g, '</blockquote>');
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                .replace(/_([^_]+)_/g, '<em>$1</em>')
+                .replace(/~([^~]+)~/g, '<del>$1</del>')
+                .replace(/^>\s*\*{3,}\s*$/gm, '<hr class="blockquote-divider">')
+                // 合并连续引用行
+                .replace(/(^>\s*.+?(?:\n>\s*.+?)*)(?=\n[^>\n]|\n$|$)/gms, (match) => {
+                    // 将连续引用行合并为单个 blockquote
+                    const lines = match.split('\n').map(line => line.replace(/^>\s*/, '')).join('<br>');
+                    return `<blockquote>${lines}</blockquote>`;
+                });
 
-        tempContainer.innerHTML = content;
+            tempContainer.innerHTML = content;
 
             // 处理临时容器的子节点
             Array.from(tempContainer.childNodes).forEach(node => {
@@ -1573,8 +1557,8 @@ function createPostElement(post, mediaStates) {
             
             iframe.src = `https://ok.ru/videoembed/${videoId}?autoplay=1`;
             iframe.style.position = 'absolute';
-            iframe.style.top = '50%';
-            iframe.style.left = '50%';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
             iframe.style.width = '133.33%';
             iframe.style.height = '100%';
             iframe.style.transform = 'translate(-50%, -50%)';
@@ -1818,8 +1802,8 @@ if (imageCount > 1) {
     iframe.src = `${media.url}&high_quality=1&quality=4&qn=112&autoplay=0&danmaku=0`;
     iframe.dataset.mediaId = mediaId;
     iframe.style.position = 'absolute';
-    iframe.style.top = '50%';
-    iframe.style.left = '50%';
+    iframe.style.top = '0';
+    iframe.style.left = '0';
     iframe.style.width = '133.33%';
     iframe.style.height = '100%';
     iframe.style.transform = 'translate(-50%, -50%)';
@@ -1887,8 +1871,8 @@ if (media.type === 'youtube') {
     // 设置iframe样式
     iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
     iframe.style.position = 'absolute';
-    iframe.style.top = '50%';
-    iframe.style.left = '50%';
+    iframe.style.top = '0';
+    iframe.style.left = '0';
     iframe.style.width = '133.33%'; // 4:3容器中显示16:9内容需要的宽度
     iframe.style.height = '100%';
     iframe.style.transform = 'translate(-50%, -50%)'; // 居中
