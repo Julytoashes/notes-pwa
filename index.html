@@ -2309,24 +2309,14 @@ function editPost(postId) {
     const textarea = modal.querySelector('#content');
     const saveBtn = modal.querySelector('#saveBtn');
 
-    const mediaUrls = post.media.map(m => {
-        if (m.original) return m.original;
-        if (m.type === 'youtube') {
-            const videoId = m.url.split('/').pop().split('?')[0];
-            return `https://youtu.be/${videoId}`;
-        } else if (m.type === 'bilibili') {
-            const bvid = new URL(m.url).searchParams.get('bvid');
-            return `https://www.bilibili.com/video/${bvid}/`;
-        } else if (m.type === 'okru') {
-            const videoId = m.url.split('/videoembed/')[1];
-            return `https://ok.ru/video/${videoId}`;
-        }
-        return m.url;
+    // 将 <blockquote> 转换回 > 前缀
+    const contentWithQuotes = post.content.replace(/<blockquote>([\s\S]*?)<\/blockquote>/g, (match, content) => {
+        return content.split('<br>').map(line => `> ${line}`).join('\n');
     });
 
     textarea.value = [
-        post.content,
-        ...mediaUrls,
+        contentWithQuotes,
+        ...post.media.map(m => m.original || m.url),
         ...post.tags.map(t => `#${t}`)
     ].join('\n');
 
@@ -2340,7 +2330,6 @@ function editPost(postId) {
             lastModified: Date.now()
         });
         if (saveToLocalStorage()) {
-            // 保存置顶区当前播放状态
             const mediaStates = {};
             const pinnedContainer = document.getElementById('pinnedContainer');
             const pinnedPostElement = pinnedContainer.querySelector(`.post[data-id="${postId}"]`);
@@ -2352,22 +2341,19 @@ function editPost(postId) {
                         playing: !media.paused
                     };
                 }
-                // 更新置顶区（原帖或副本）
                 const newElement = createPostElement(post, mediaStates);
                 newElement.dataset.pinned = 'true';
                 if (pinnedPostElement.dataset.moved) newElement.dataset.moved = 'true';
                 pinnedContainer.replaceChild(newElement, pinnedPostElement);
             }
 
-            // 更新非置顶区
             const postsContainer = document.getElementById('postsContainer');
             const nonPinnedPostElement = postsContainer.querySelector(`.post[data-id="${postId}"]:not([data-pinned])`);
             if (nonPinnedPostElement) {
-                const newElement = createPostElement(post, {}); // 不播放
+                const newElement = createPostElement(post, {});
                 postsContainer.replaceChild(newElement, nonPinnedPostElement);
             }
 
-            // 刷新非置顶区（如果在搜索或标签过滤模式下）
             if (currentSearchTerm) {
                 searchPosts();
             } else if (currentFilterTag) {
