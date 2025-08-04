@@ -1101,7 +1101,8 @@ https://youtu.be/abc123
 单星号斜体
 浪号是删除
 三星号是水平线
-大于号是引用内容"></textarea>
+大于号:单行引用
+¥¥多行引用¥¥"></textarea>
     <div style="display:flex;gap:10px;justify-content:center;">
         <button id="saveBtn" style="background:rgb(var(--theme-highlight));color:rgb(var(--theme-background));border:none;padding:8px 20px;border-radius:5px;">✔</button>
         
@@ -1177,15 +1178,16 @@ function toggleModal(isEdit = false) {
         <textarea id="content" placeholder="输入内容、媒体链接和标签（示例）：
 今天发现一个好视频
 https://youtu.be/abc123
-#音乐 #推荐
+#音乐 
+#推荐
 
-搜索：空格=与 /斜杠=或  双星号是粗体
-
+搜索：空格=与 /斜杠=或  
+¥[多行引用]
 *斜体*
 **加粗**
 ~删除线~
 ***是水平线
-> 是引用内容"></textarea>
+>单行引用"></textarea>
         <div style="display:flex;justify-content:center;">
             <button id="saveBtn" style="background:#f7ebeb;color:#1d1d5c;border:none;padding:8px 20px;border-radius:5px;">✔</button>
         </div>
@@ -1273,64 +1275,82 @@ const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i
         }
 
         function parseInput(input) {
-    const lines = input.split('\n');
+    let processedInput = input.replace(/¥\[([\s\S]*?)\]/g, (match, content) => {
+        // 保留所有行，包括空行
+        return content
+            .split('\n')
+            .map(line => line.trim() ? `> ${line}` : '>')
+            .join('\n');
+    });
+
+    const lines = processedInput.split('\n');
     const media = [];
     const tags = [];
     const contentLines = [];
     let blockquoteLines = [];
     let inBlockquote = false;
+    let isYYBlockquote = false;
 
     lines.forEach((line, index) => {
-        const trimmedLine = line.trimStart(); // 仅去除行首空格，保留原始格式
-
-        // 处理引用行
+        const trimmedLine = line.trimStart();
         if (trimmedLine.startsWith('>')) {
             if (!inBlockquote) {
                 inBlockquote = true;
+                if (index > 0 && lines[index - 1].includes('¥[')) {
+                    isYYBlockquote = true;
+                }
             }
-            // 去除 "> " 前缀，保留内容
             const quoteContent = trimmedLine.replace(/^>\s*/, '');
-            if (quoteContent || blockquoteLines.length > 0) {
-                blockquoteLines.push(quoteContent);
-            }
+            blockquoteLines.push(quoteContent); // 保留空行（空字符串）
             return;
         }
-
-        // 结束引用块
         if (inBlockquote && !trimmedLine.startsWith('>')) {
             inBlockquote = false;
             if (blockquoteLines.length > 0) {
-                contentLines.push(`<blockquote>${blockquoteLines.join('<br>')}</blockquote>`);
+                // 清理首尾空行，但保留内部空行
+                const cleanedLines = blockquoteLines
+                    .join('<br>')
+                    .replace(/^(?:<br>)+|(?:<br>)+$/g, '')
+                    .split('<br>');
+                if (cleanedLines[0] !== '') { // 确保不生成空 <blockquote>
+                    contentLines.push(
+                        isYYBlockquote
+                            ? `<blockquote class="yy">${cleanedLines.join('<br>')}</blockquote>`
+                            : `<blockquote>${cleanedLines.join('<br>')}</blockquote>`
+                    );
+                }
                 blockquoteLines = [];
+                isYYBlockquote = false;
             }
         }
-
-        // 处理媒体链接
         const mediaType = detectMediaType(trimmedLine);
         if (mediaType) {
             media.push(mediaType);
             return;
         }
-
-        // 处理标签
         if (trimmedLine.startsWith('#')) {
             tags.push(trimmedLine.slice(1).trim());
             return;
         }
-
-        // 处理正文（非引用、非媒体、非标签）
-        if (trimmedLine || index === 0) {
+        if (trimmedLine.trim() !== '' || contentLines.length > 0) {
             contentLines.push(trimmedLine);
         }
     });
-
-    // 处理文件末尾的引用块
     if (inBlockquote && blockquoteLines.length > 0) {
-        contentLines.push(`<blockquote>${blockquoteLines.join('<br>')}</blockquote>`);
+        const cleanedLines = blockquoteLines
+            .join('<br>')
+            .replace(/^(?:<br>)+|(?:<br>)+$/g, '')
+            .split('<br>');
+        if (cleanedLines[0] !== '') {
+            contentLines.push(
+                isYYBlockquote
+                    ? `<blockquote class="yy">${cleanedLines.join('<br>')}</blockquote>`
+                    : `<blockquote>${cleanedLines.join('<br>')}</blockquote>`
+            );
+        }
     }
-
     return {
-        content: contentLines.join('\n').trim(), // 使用 \n 连接正文，保留必要换行
+        content: contentLines.join('\n').trim(),
         media,
         tags
     };
@@ -2309,16 +2329,23 @@ function editPost(postId) {
     const textarea = modal.querySelector('#content');
     const saveBtn = modal.querySelector('#saveBtn');
 
-    // 将 <blockquote> 转换回 > 前缀
-    const contentWithQuotes = post.content.replace(/<blockquote>([\s\S]*?)<\/blockquote>/g, (match, content) => {
-        return content.split('<br>').map(line => `> ${line}`).join('\n');
+    const contentWithQuotes = post.content.replace(/<blockquote(?:\s+class="yy")?>([\s\S]*?)<\/blockquote>/g, (match, content, classAttr) => {
+        // 保留所有行，包括空行
+        const lines = content.split('<br>');
+        if (classAttr) {
+            return `¥[${lines.join('\n')}]`;
+        }
+        return lines.map(line => line.trim() ? `> ${line}` : '>').join('\n');
     });
 
-    textarea.value = [
+    const parts = [
         contentWithQuotes,
         ...post.media.map(m => m.original || m.url),
         ...post.tags.map(t => `#${t}`)
-    ].join('\n');
+    ].filter(part => part.trim() !== '');
+    textarea.value = parts.join('\n');
+
+  
 
     saveBtn.onclick = () => {
         const { content, media, tags } = parseInput(textarea.value);
