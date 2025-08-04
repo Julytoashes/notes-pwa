@@ -1126,37 +1126,116 @@ https://youtu.be/abc123
     <div id="pinnedContainer" class="pinned-container"></div>
 </div>
     <script>
-    	// 原代码第45行修改为 ▼▼▼
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        posts = [];
+    	
+    
+    let db;
+
+function openDatabase() {
+    const request = indexedDB.open('notesDatabase', 1);
+
+    request.onerror = (event) => {
+        console.error('数据库打开失败:', event);
+    };
+
+    request.onsuccess = (event) => {
+        db = event.target.result;
+        console.log('数据库打开成功');
+        loadPostsFromIndexedDB(); // 注意这里函数名改了
+    };
+
+    request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        const objectStore = db.createObjectStore('posts', { keyPath: 'id' });
+        objectStore.createIndex('lastModified', 'lastModified', { unique: false });
+        console.log('数据库版本更新，创建对象存储');
+    };
+}
+
+// 在页面加载时打开数据库
+document.addEventListener('DOMContentLoaded', openDatabase);
+
+
+async function saveToIndexedDB(postsToSave) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject("数据库未打开！");
+            return;
+        }
+
+        const transaction = db.transaction(['posts'], 'readwrite');
+        const objectStore = transaction.objectStore('posts');
+
+        transaction.oncomplete = () => {
+            console.log('所有帖子保存成功');
+            resolve(true);
+        };
+
+        transaction.onerror = (event) => {
+            console.error('保存帖子失败:', event);
+            reject(event);
+        };
+
+        postsToSave.forEach(post => {
+            const request = objectStore.get(post.id); // 获取现有的帖子数据
+
+            request.onsuccess = (event) => {
+                const existingPost = event.target.result;
+
+                if (existingPost) {
+                    // 帖子已存在，进行增量更新
+                    const updatedPost = { ...existingPost }; // 复制现有帖子数据
+
+                    // 遍历所有字段，只更新变化的字段
+                    for (const key in post) {
+                        if (post.hasOwnProperty(key) && post[key] !== existingPost[key]) {
+                            updatedPost[key] = post[key];
+                        }
+                    }
+                    updatedPost.lastModified = Date.now(); // 更新最后修改时间
+
+                    objectStore.put(updatedPost); // 保存更新后的帖子
+                } else {
+                    // 帖子不存在，直接插入
+                    objectStore.put(post);
+                }
+            };
+
+            request.onerror = (event) => {
+                console.error('获取帖子失败:', event);
+                reject(event);
+            }
+        });
+    });
+}
+
+
+function loadPostsFromIndexedDB() { // 函数名改了
+    if (!db) return; // 数据库未打开则直接返回
+
+    const transaction = db.transaction(['posts'], 'readonly');
+    const objectStore = transaction.objectStore('posts');
+    const request = objectStore.getAll();
+
+    request.onsuccess = (event) => {
+        posts = event.target.result || []; // 如果没有数据，初始化为空数组
         allTags = new Set();
-        const savedPosts = localStorage.getItem('posts');
-        if (savedPosts) {
-            posts = JSON.parse(savedPosts).map(p => ({
-                ...p,
-                id: p.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                tags: p.tags || [],
-                lastModified: p.lastModified || Date.now()
-            })).sort(() => Math.random() - 0.5);
-        }
-        const savedTags = localStorage.getItem('tags');
-        if (savedTags) {
-            allTags = new Set(JSON.parse(savedTags));
-        }
-        // 确保置顶帖子ID存在
-        if (!localStorage.getItem('pinnedPosts')) {
-            localStorage.setItem('pinnedPosts', '[]');
-        }
+        posts.forEach(post => post.tags.forEach(tag => allTags.add(tag)));
+
         renderTags();
         renderPinnedPosts(); // 渲染置顶区
         renderPosts(posts); // 渲染普通帖子区
-    } catch (error) {
-        console.error('初始化失败:', error);
-        alert('数据加载异常，已重置');
-        localStorage.clear();
-        location.reload();
-    }
+    };
+
+    request.onerror = (event) => {
+        console.error('加载帖子失败:', event);
+    };
+}
+
+
+
+    	// 原代码第45行修改为 ▼▼▼
+document.addEventListener('DOMContentLoaded', () => {
+    openDatabase(); // 只调用 openDatabase 函数
 });
         // 保持原有JavaScript逻辑不变
         let posts = [];
@@ -1352,11 +1431,12 @@ const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i
     return {
         content: contentLines.join('\n').trim(),
         media,
-        tags
+        tags,
+        lastModified: Date.now() // 添加 lastModified 字段
     };
 }
 
-        function addPost() {
+        async function addPost() { // 添加 async 关键字
     const modal = document.querySelector('.modal');
     const textarea = modal.querySelector('#content');
     const input = textarea.value;
@@ -1369,16 +1449,19 @@ const okruRegex = /(?:https?:\/\/)?(?:www\.)?ok\.ru\/video\/(\d+)(?:\/|\?|&|$)/i
         content,
         media,
         tags,
-        lastModified: Date.now()
+        lastModified: Date.now(),
+        pinned: false //  确保 pinned 属性存在，并默认为 false
     });
 
-    if (saveToLocalStorage()) {
+    try {
+        await saveToIndexedDB(posts); // 等待保存完成
         renderTags();
-        renderPosts(posts); // 只渲染非置顶区
+        renderPosts(posts); // 
+        renderPinnedPosts();//
         modal.style.display = 'none';
         textarea.value = '';
-    } else {
-        alert('保存失败，请重试');
+    } catch (error) {
+        alert('保存失败，请重试: ' + error);
     }
 }
 
@@ -2278,74 +2361,54 @@ function togglePinMode() {
 
 
 
-function deletePost(postId) {
-    // Remove post from posts array
+async function deletePost(postId) {
+    // 从 posts 数组中移除帖子
     posts = posts.filter(p => p.id !== postId);
 
-    // Remove from pinned posts if present
-    let pinnedPostIds = new Set(JSON.parse(localStorage.getItem('pinnedPosts') || '[]'));
-    if (pinnedPostIds.has(postId)) {
-        pinnedPostIds.delete(postId);
-        localStorage.setItem('pinnedPosts', JSON.stringify([...pinnedPostIds]));
-    }
-
-    // Update tags
+    // 更新标签
     allTags.clear();
-    posts.forEach(post => {
-        post.tags.forEach(tag => allTags.add(tag));
-    });
+    posts.forEach(post => post.tags.forEach(tag => allTags.add(tag)));
 
-    // Save changes to localStorage
-    if (saveToLocalStorage()) {
-        // Remove post from DOM (both pinned and non-pinned)
-        document.querySelectorAll(`.post[data-id="${postId}"]`).forEach(postElement => {
-            postElement.remove();
-        });
+    try {
+        await saveToIndexedDB(posts); // 使用 Promise 版本的 saveToIndexedDB
 
-        // Update pinned container visibility
-        const pinnedContainer = document.getElementById('pinnedContainer');
-        pinnedContainer.classList.toggle('active', pinnedPostIds.size > 0);
+        // 从 DOM 中移除帖子（包括置顶和非置顶）
+        document.querySelectorAll(`.post[data-id="${postId}"]`).forEach(postElement => postElement.remove());
 
-        // Re-render tags and posts
+        // 重新渲染标签、帖子和置顶区
         renderTags();
-        if (currentSearchTerm) {
-            searchPosts();
-        } else if (currentFilterTag) {
-            renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
-        } else {
-            renderPosts(posts);
-        }
-    } else {
-        alert('删除失败，请重试');
+        renderPosts(); // 使用 renderPosts()，它会根据当前过滤条件渲染
+        renderPinnedPosts(); // 重新渲染置顶区
+
+    } catch (error) {
+        alert('删除失败，请重试: ' + error);
     }
 }
 // 新增编辑功能
-function editPost(postId) {
+async function editPost(postId) {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
 
-    toggleModal(true);
+    toggleModal(true); // 打开模态框
     const modal = document.querySelector('.modal');
     const textarea = modal.querySelector('#content');
     const saveBtn = modal.querySelector('#saveBtn');
 
-    // 改进正则表达式，分别处理单行和多行引用
+
+    // 将帖子内容、媒体链接和标签填充到 textarea 中
+    // 这部分代码保持不变
     const contentWithQuotes = post.content.replace(
         /<blockquote(?:\s+class="yy")?>([\s\S]*?)<\/blockquote>/g,
-        (match, content, offset, string, groups, classAttr) => {
-            // 清理内容中的空 <br> 标签
+        (match, content) => {
             const cleanedContent = content.replace(/<br>\s*$/, '');
             const lines = cleanedContent.split('<br>').map(line => line.trimEnd());
-            // 如果包含 <br> 或多于一行（忽略空行），视为多行引用
             if (cleanedContent.includes('<br>') || lines.filter(line => line).length > 1) {
                 return `¥[${lines.join('\n')}]`;
             } else {
-                // 单行引用，去除多余空白
                 return `> ${lines[0].trim()}`;
             }
         }
     );
-
     const parts = [
         contentWithQuotes,
         ...post.media.map(m => m.original || m.url),
@@ -2353,50 +2416,60 @@ function editPost(postId) {
     ].filter(part => part.trim() !== '');
     textarea.value = parts.join('\n');
 
-    saveBtn.onclick = () => {
-        const { content, media, tags } = parseInput(textarea.value);
-        Object.assign(post, {
-            content,
-            media,
-            tags,
-            id: postId,
-            lastModified: Date.now()
-        });
-        if (saveToLocalStorage()) {
-            const mediaStates = {};
-            const pinnedContainer = document.getElementById('pinnedContainer');
-            const pinnedPostElement = pinnedContainer.querySelector(`.post[data-id="${postId}"]`);
-            if (pinnedPostElement) {
-                const media = pinnedPostElement.querySelector('.post-media audio, .post-media video');
-                if (media) {
-                    mediaStates[postId] = {
-                        time: media.currentTime,
-                        playing: !media.paused
-                    };
+
+
+    saveBtn.onclick = async () => {
+        const { content, media, tags, lastModified } = parseInput(textarea.value); // 解析输入
+
+        // 检查是否有任何字段发生变化
+        let hasChanges = false;
+        if (post.content !== content) hasChanges = true;
+        if (JSON.stringify(post.media) !== JSON.stringify(media)) hasChanges = true;
+        if (JSON.stringify(post.tags) !== JSON.stringify(tags)) hasChanges = true;
+
+        if (hasChanges) {
+            // 更新帖子数据
+            post.content = content;
+            post.media = media;
+            post.tags = tags;
+            post.lastModified = Date.now(); // 使用 Date.now() 获取最新时间戳
+
+            try {
+                await saveToIndexedDB([post]); // 只保存修改后的帖子
+
+                // 更新 DOM，包括置顶和非置顶帖子
+                const pinnedContainer = document.getElementById('pinnedContainer');
+                const pinnedPostElement = pinnedContainer.querySelector(`.post[data-id="${postId}"]`);
+                if (pinnedPostElement) {
+                    // 更新置顶帖子
+                    const mediaStates = {}; // 用于保存媒体播放状态
+                    const mediaElement = pinnedPostElement.querySelector('.post-media audio, .post-media video'); // 获取媒体元素
+                    if (mediaElement) {
+                        mediaStates[postId] = { time: mediaElement.currentTime, playing: !mediaElement.paused };
+                    }
+                    const newPinnedElement = createPostElement(post, mediaStates);
+                    newPinnedElement.dataset.pinned = 'true';
+                    pinnedContainer.replaceChild(newPinnedElement, pinnedPostElement);
+                    renderPinnedPosts(); // 更新置顶区
                 }
-                const newElement = createPostElement(post, mediaStates);
-                newElement.dataset.pinned = 'true';
-                if (pinnedPostElement.dataset.moved) newElement.dataset.moved = 'true';
-                pinnedContainer.replaceChild(newElement, pinnedPostElement);
-            }
 
-            const postsContainer = document.getElementById('postsContainer');
-            const nonPinnedPostElement = postsContainer.querySelector(`.post[data-id="${postId}"]:not([data-pinned])`);
-            if (nonPinnedPostElement) {
-                const newElement = createPostElement(post, {});
-                postsContainer.replaceChild(newElement, nonPinnedPostElement);
-            }
+                const postsContainer = document.getElementById('postsContainer');
+                const nonPinnedPostElement = postsContainer.querySelector(`.post[data-id="${postId}"]:not([data-pinned])`);
+                if (nonPinnedPostElement) {
+                    // 更新非置顶帖子
+                    const newNonPinnedElement = createPostElement(post, {});
+                    postsContainer.replaceChild(newNonPinnedElement, nonPinnedPostElement);
+                }
+                
+                renderPosts(); // 重新渲染所有帖子，确保更新后的帖子显示出来
+                renderTags();
 
-            if (currentSearchTerm) {
-                searchPosts();
-            } else if (currentFilterTag) {
-                renderPosts(posts.filter(p => p.tags.includes(currentFilterTag)));
-            } else {
-                renderPosts(posts);
+                modal.style.display = 'none'; // 关闭模态框
+            } catch (error) {
+                alert('保存失败，请重试: ' + error);
             }
-            modal.style.display = 'none';
         } else {
-            alert('保存失败，请重试');
+            modal.style.display = 'none'; // 没有变化，直接关闭模态框
         }
     };
 }
@@ -2434,7 +2507,7 @@ function showTagManager() {
     tagManager.style.display = 'block';
 }
 
-function renameTag(oldTag) {
+async function renameTag(oldTag) {
     const newTag = prompt(`请输入新的标签名称（当前：${oldTag}）：`);
     if (newTag && newTag !== oldTag) {
         posts.forEach(post => {
@@ -2443,62 +2516,61 @@ function renameTag(oldTag) {
                 post.tags[tagIndex] = newTag;
             }
         });
-        
+
         allTags.delete(oldTag);
         allTags.add(newTag);
-        
-        if (saveToLocalStorage()) {
+
+        try {
+            await saveToIndexedDB(posts);
             renderTags();
-            renderPosts(posts);
-            showTagManager();
-        } else {
-            alert('保存失败，请重试');
+            renderPosts(); // 使用 renderPosts() 重新渲染，它会处理过滤
+            showTagManager(); // 
+        } catch (error) {
+            alert('重命名标签失败: ' + error);
         }
     }
 }
 
-
-
-function deleteTag(tag) {
-    if (confirm(`确定要删除标签"${tag}"吗？`)) {
+async function deleteTag(tag) {
+    if (confirm(`确定要删除标签 "${tag}" 吗？`)) {
         posts.forEach(post => {
             post.tags = post.tags.filter(t => t !== tag);
         });
-        
+
         allTags.delete(tag);
-        
-        if (saveToLocalStorage()) {
+
+        try {
+            await saveToIndexedDB(posts);
             renderTags();
-            renderPosts(posts);
-            showTagManager();
-        } else {
-            alert('保存失败，请重试');
+            renderPosts(); // 使用 renderPosts() 重新渲染
+            showTagManager(); // 
+        } catch (error) {
+            alert('删除标签失败: ' + error);
         }
     }
 }
 
-
-function cleanUnusedTags() {
+async function cleanUnusedTags() {
     const usedTags = new Set();
-    posts.forEach(post => {
-        post.tags.forEach(tag => usedTags.add(tag));
-    });
-    
+    posts.forEach(post => post.tags.forEach(tag => usedTags.add(tag)));
+
     const unusedTags = Array.from(allTags).filter(tag => !usedTags.has(tag));
     if (unusedTags.length === 0) {
         alert('没有找到未使用的标签！');
         return;
     }
-    
+
     if (confirm(`发现 ${unusedTags.length} 个未使用的标签，是否清理？\n${unusedTags.join(', ')}`)) {
         unusedTags.forEach(tag => allTags.delete(tag));
-        
-        // 保存更新
-        localStorage.setItem('tags', JSON.stringify([...allTags]));
-        
-        // 刷新显示
-        renderTags();
-        showTagManager();
+
+        try {
+            await saveToIndexedDB(posts); // posts 数组可能也需要更新，因为标签被删除了
+            renderTags();
+            renderPosts(); // 重新渲染帖子
+            showTagManager();
+        } catch (error) {
+            alert('清理未使用标签失败: ' + error);
+        }
     }
 }
 function searchPosts() {
@@ -2545,57 +2617,53 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
     }
 });
 function exportPosts() {
-    const data = {
-        posts: posts.map(post => ({
-            ...post,
-            lastModified: post.lastModified || Date.now() // 确保旧数据也有时间戳
-        })),
-        tags: Array.from(allTags)
+    const transaction = db.transaction(['posts'], 'readonly');
+    const objectStore = transaction.objectStore('posts');
+    const request = objectStore.getAll();
+
+    request.onsuccess = (event) => {
+        const data = {
+            posts: event.target.result,
+            tags: Array.from(allTags)
+        };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `posts_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
-    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `posts_backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
 }
 
 // 在importPosts函数中添加冲突检测和提示逻辑
 async function importPosts(input) {
-  const file = input.files[0];
-  if(!file) return;
+    const file = input.files[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-      try {
-          const data = JSON.parse(e.target.result);
-            
-          let updatedCount = 0;
-          const newPosts = [];
-          const conflictList = [];
-            
-          // 第一阶段：收集冲突
-          data.posts.forEach(importedPost => {
-              if (!importedPost.lastModified) {
-                  importedPost.lastModified = Date.now();
-              }
-                
-              const existingIndex = posts.findIndex(p => p.id === importedPost.id);
-              if (existingIndex >= 0) {
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            let updatedCount = 0;
+            const newPosts = [];
+            const conflictList = [];
+
+            // 第一阶段：收集冲突
+            data.posts.forEach(importedPost => {
+                if (!importedPost.lastModified) {
+                    importedPost.lastModified = Date.now();
+                }
+
+                const existingIndex = posts.findIndex(p => p.id === importedPost.id);
+                if (existingIndex >= 0) {
                     const existingPost = posts[existingIndex];
-                    
-                    // 检查是否是真正的冲突（内容不同且都有编辑历史）
                     const isRealConflict = () => {
-                        // 基本字段比较
-                        const basicFieldsDiff = 
+                        const basicFieldsDiff =
                             importedPost.content !== existingPost.content ||
                             JSON.stringify(importedPost.tags) !== JSON.stringify(existingPost.tags) ||
                             JSON.stringify(importedPost.media) !== JSON.stringify(existingPost.media);
-                        
-                        // 都有编辑历史
                         const bothEdited = importedPost.lastModified && existingPost.lastModified;
-                        
                         return basicFieldsDiff && bothEdited;
                     };
 
@@ -2604,18 +2672,15 @@ async function importPosts(input) {
                             imported: importedPost,
                             existing: existingPost,
                             index: existingIndex,
-                            // 添加冲突类型标识
                             type: 'content'
                         });
                     } else if (!isRealConflict() && importedPost.lastModified > existingPost.lastModified) {
-                        // 没有真正冲突但导入版本较新，自动更新
                         posts[existingIndex] = importedPost;
                         updatedCount++;
                     }
                 } else {
                     newPosts.push(importedPost);
                 }
-                // ▲▲▲ 添加结束 ▲▲▲
             });
 
             // 第二阶段：处理冲突
@@ -2630,14 +2695,10 @@ async function importPosts(input) {
             
             // 第三阶段：合并数据
             posts = [...posts, ...newPosts];
-            data.tags.forEach(tag => allTags.add(tag));
-            
-            if (saveToLocalStorage()) {
-                renderTags();
-                renderPosts(posts);
-                alert(`导入完成！\n新增帖子：${newPosts.length}\n更新帖子：${updatedCount}\n解决冲突：${conflictList.length}`);
-            }
-        } catch(err) {
+            await saveToIndexedDB(posts);
+
+            alert(`导入完成！\n新增帖子：${newPosts.length}\n更新帖子：${updatedCount}\n解决冲突：${conflictList.length}`);
+        } catch (err) {
             alert('导入失败：' + err.message);
         }
     };
@@ -2773,21 +2834,7 @@ function generateDiffHtml(current, imported) {
 
 
 
-function saveToLocalStorage() {
-    try {
-        const uniqueIds = new Set(posts.map(p => p.id));
-        if (uniqueIds.size !== posts.length) {
-            console.error('发现重复ID');
-            return false;
-        }
-        localStorage.setItem('posts', JSON.stringify(posts));
-        localStorage.setItem('tags', JSON.stringify([...allTags]));
-        return true;
-    } catch (error) {
-        console.error('保存失败:', error);
-        return false;
-    }
-}
+
 if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/notes-pwa/sw.js')
         .then(reg => console.log('SW registered', reg))
