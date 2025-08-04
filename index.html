@@ -1209,28 +1209,29 @@ async function saveToIndexedDB(postsToSave) {
 }
 
 
-function loadPostsFromIndexedDB() { // 函数名改了
-    if (!db) return; // 数据库未打开则直接返回
+function loadPostsFromIndexedDB() {
+    if (!db) return;
 
     const transaction = db.transaction(['posts'], 'readonly');
     const objectStore = transaction.objectStore('posts');
     const request = objectStore.getAll();
 
     request.onsuccess = (event) => {
-        posts = event.target.result || []; // 如果没有数据，初始化为空数组
+        posts = event.target.result || [];
+        // 添加随机排序
+        posts = posts.sort(() => Math.random() - 0.5);
         allTags = new Set();
         posts.forEach(post => post.tags.forEach(tag => allTags.add(tag)));
 
         renderTags();
-        renderPinnedPosts(); // 渲染置顶区
-        renderPosts(posts); // 渲染普通帖子区
+        renderPinnedPosts();
+        renderPosts(posts);
     };
 
     request.onerror = (event) => {
         console.error('加载帖子失败:', event);
     };
 }
-
 
 
     	// 原代码第45行修改为 ▼▼▼
