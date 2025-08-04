@@ -2329,14 +2329,22 @@ function editPost(postId) {
     const textarea = modal.querySelector('#content');
     const saveBtn = modal.querySelector('#saveBtn');
 
-    const contentWithQuotes = post.content.replace(/<blockquote(?:\s+class="yy")?>([\s\S]*?)<\/blockquote>/g, (match, content, classAttr) => {
-        // 保留所有行，包括空行
-        const lines = content.split('<br>');
-        if (classAttr) {
-            return `¥[${lines.join('\n')}]`;
+    // 改进正则表达式，分别处理单行和多行引用
+    const contentWithQuotes = post.content.replace(
+        /<blockquote(?:\s+class="yy")?>([\s\S]*?)<\/blockquote>/g,
+        (match, content, offset, string, groups, classAttr) => {
+            // 清理内容中的空 <br> 标签
+            const cleanedContent = content.replace(/<br>\s*$/, '');
+            const lines = cleanedContent.split('<br>').map(line => line.trimEnd());
+            // 如果包含 <br> 或多于一行（忽略空行），视为多行引用
+            if (cleanedContent.includes('<br>') || lines.filter(line => line).length > 1) {
+                return `¥[${lines.join('\n')}]`;
+            } else {
+                // 单行引用，去除多余空白
+                return `> ${lines[0].trim()}`;
+            }
         }
-        return lines.map(line => line.trim() ? `> ${line}` : '>').join('\n');
-    });
+    );
 
     const parts = [
         contentWithQuotes,
@@ -2344,8 +2352,6 @@ function editPost(postId) {
         ...post.tags.map(t => `#${t}`)
     ].filter(part => part.trim() !== '');
     textarea.value = parts.join('\n');
-
-  
 
     saveBtn.onclick = () => {
         const { content, media, tags } = parseInput(textarea.value);
